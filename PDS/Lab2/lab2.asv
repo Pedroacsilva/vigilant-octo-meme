@@ -1,0 +1,80 @@
+%Lab 2 PDS: Conversao de Frequencia de amostragem
+%PL2
+%Grupo 8
+%Autores:
+%Pedro Carriço
+%Pedro Silva
+close all; clc; clear ; mkdir('Imagens ');delete Imagens/*.*
+% Considere um sinal de fala guardado em formato WAV com frequência de amostragem de
+% fs=20000 Hz (por exemplo, PT3.wav). Identifique os fatores de expansão, L, e de decimação, M
+% (devem ser primos entre si).
+fs_in = 20000;
+fs_out = 48000;
+L = 160; M = 147;
+% Projete um filtro FIR com ordem 3200 (comprimento Nh=3201; atraso de 1600 amostras) com o
+% método das janelas (comando fir1). Aplique um ganho L para que as amplitudes de entrada e de
+% saída sejam iguais. Calcule a resposta em frequência do filtro (comando freqz), faça um plot
+% da resposta de forma a verificar que a frequência de corte está bem definida.
+Nh = 3201;          %comprimento do filtro FIR
+%filtro low pass com wc = 1/L e ganho L
+h = fir1(Nh-1, 1/L) * L;        %nao esquecer compensar o ganho do filtro
+[H,w] = freqz(h, 1, 4000);      %resposta em frequencia do filtro 
+fig = figure;
+semilogx(w/pi, abs(H))
+grid on; title('Filtro H(z) passa baixo para w_c = 1/L')
+print(fig , '-dpng', 'Imagens/filtrolowpass')
+% Faça a implementação direta do sistema, usando as variáveis xe (sinal x expandido por L); xh
+% (sinal xe filtrado); y (sinal de saída que é xh decimado por M).
+% Nota: para fazer expansão por L, use o comando upsample(x,L). Para fazer a decimação por M
+% basta fazer downsample(x,M) ou simplesmente y=xh(1:M:end);
+% Nota: use apenas as 1000 primeiras amostras de sinal para que o processamento se faça em
+% alguns segundos (note que o Matlab usa linguagem interpretada e os fatores de decimação e
+% expansão são elevados). 
+
+
+%O nosso sinal de entrada será o ficheiro de áudio 'PT3.wav'
+[x,fs]= audioread('PT3.wav');
+x_len = length(x);
+disp('O nosso sinal de entrada, o ficheiro de áudio PT3.wav, tem ')
+disp(x_len)
+disp(' amostras.')
+xe = upsample(x(1:200), L);     %Sinal expandido
+xh = filter(h, 1, xe);          %Sinal interpolado
+y = xh(1:M:end);                %Sinal de saída, sinal interpolado decimado por M (M = 147)
+fig = figure;
+plot(1:L*200, xe, 1:L:200*L, x(1:200), '*', 1:L*200 - 1600, xh(1601:end))
+title('Sinal áudio expandido, original e interpolado')
+legend('Sinal Expandido', 'Sinal Original', 'Sinal interpolado')
+print(fig , '-dpng', 'Imagens/sinalexpandido_original_interpolado')
+
+%Faça um plot do sinal x e xe em simultâneo, os pontos de x com asteriscos e os de xe com linhas.
+fig = figure
+plot(1:L:L*200, x(1:200), 'r*', 1:200*L, xe)
+title('Sinal áudio original e expandido')
+legend('Sinal Original', 'Sinal Expandido')
+print(fig , '-dpng', 'Imagens/sinaloriginal_expandido')
+%Faça um plot do sinal xh e y em simultâneo, os pontos de y com asteriscos e os de xh com linhas.
+fig = figure
+plot(1:L*200, xh, 1:M:M*length(y), y, 'r*')
+title('Sinal interpolado e decimado')
+legend('Sinal Interpolado', 'Sinal Decimado')
+print(fig , '-dpng', 'Imagens/sinalinterpolado_decimado')
+%vamos ver Nx amostras do sinal de entrada e definir 3 vetores de tempo em
+%segundos em função das 3 frequências de amostragem do sistema:
+xe = upsample(x(1:1000), L);
+xh = filter(h, 1, xe);
+y = xh(1:M:end);
+Nx= 441; Ny=ceil(Nx*L/M) %Ny=480
+t1 = (10:Nx+10-1)/fs; %avança 10 amostras para compensar o atraso do filtro
+t2 = (0:Nx*L-1)/(fs*L); %fs2 = fs*L
+t3 = (0:Ny-1)/(fs*L/M); %fs3 = fs2/M
+fig = figure;
+plot(t1,x(1:Nx),'g.',t2,xh(1:Nx*L),t3,y(1:Ny),'ro')
+grid, legend({'Sinal entrada','Sinal interpolado','Sinal de Saida'})
+print(fig , '-dpng', 'Imagens/atrasonossinais')
+
+
+
+
+
+
