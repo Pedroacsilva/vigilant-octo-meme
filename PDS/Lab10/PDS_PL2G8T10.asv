@@ -1,0 +1,52 @@
+%Lab 10 PDS: Espetro de Termo Curto, Periodograma e modelo Autorregressivo.
+%PL2
+%Grupo 8
+%Autor:
+%Pedro Silva
+close all; clc; clear; mkdir('Imagens '); delete Imagens/*.*
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 1. Sinal de fala e tramas de 25 ms de 10 em 10 ms
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Leia o ficheiro TVFL_FLI_LIM_F00_896@8.wav e ouça o sinal. Filtre o sinal de forna a eliminar a
+% forte componente a 50Hz:
+[x, fs] = audioread('TVFL_FLI_LIM_F00_896@8.wav');
+h=fir1(500,70*2/fs,'high');
+fig1 = figure(1);
+freqz(h,1)
+print(fig1, '-dpng', 'Imagens/Filtro_HP')
+x1=filter(h,1,x);
+%comparar:
+fig2 = figure(2);
+plot(1:2000,x(1:2000),1:2000,x1(251:2250)),grid on; xlabel('n'); ylabel('x'); title('Sinal original e filtrado'); legend('Original', 'Filtrado');
+print(fig2, '-dpng', 'Imagens/Sinal_Original_Filtrado')
+% Vamos definir uma janela de 25ms, N, que percorre o sinal e que extrai do sinal uma frame.
+% Esta janela avança com uma cadencia, M, de 10ms.
+M = 80; N = 200;
+% Vamos agora definir as tramas do sinal aplicando a janela retangular com estes parâmetros, usando o
+% comando buffer:
+xf=buffer(x1,N,N-M);
+MSG = ['Criamos um buffer com dimensoes ' num2str(size(xf,1)) ' x ' num2str(size(xf,2)), '.'];
+disp(MSG)
+w=hamming(N); fig3 = figure(3); plot(w); grid on; xlabel('Amostras'); ylabel('Amplitude'); title('Janela de Hamming');
+xf=xf.*w; %vetor coluna w é expandido por Nf.
+print(fig3, '-dpng', 'Imagens/Janela_Hamming');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 2. Periodograma
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%NDFT => 2 * N_amostras - 1
+Nfft=512;
+if(Nfft > 2 * size(xf, 1) - 1)
+    MSG = ['Tamanho valido para calculo do periodograma. Ndft >= 2 * N_amostras - 1: ', num2str('Nfft'), ' >= ', num2str(2 * N - 1 ), '.'];
+    disp(MSG)
+end
+fk = (0:N)/N*fs/2; %N+1 frequências de interesse
+%Fazer a FFT de cada frame
+Xf = fft(xf(1:N), Nfft); %DFT com 2*N pontos
+P = abs(Xf(1:N+1)).^2/N; %N+1 pontos para k=0:N
+
+
+
+
+
+
+
