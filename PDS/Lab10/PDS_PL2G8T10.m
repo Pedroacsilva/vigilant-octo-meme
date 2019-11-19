@@ -128,7 +128,39 @@ print(fig6, '-dpng', 'Imagens/Sonograma_AR')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 4. Síntese com método OLA
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Síntese do sinal de fala com Overlap-Add
+% Excitação só com ruído branco
+y=zeros((Nf-1)*M+N,1);
+i=1; j=N; %índice de início e de fim da primeira trama.
+for m=1:Nf
+    ex = randn(N,1); %excitação só com ruído
+    ym = filter(b(m),A(:,m),ex);
+    y(i:j)=y(i:j)+ym; %overlap-add com N-M valores sobrepostos
+    i=i+M;j=j+M; %índice de início e de fim da próxima trama.
+end
+MSG = ['Excitacao so com ruido branco com Overlap-add.'];
+disp(MSG)
+soundsc(y,fs);
+pause(9)
 
+
+% Excitação sempre periódica e com período N
+disp('Excitacao periodica')
+for N0 = 20:20:80 %experimente N0=40 e N0=80 (submúltiplos de 80)
+    MSG = ['N0 = ', num2str(N0), '.'];
+    disp(MSG)
+    y=zeros((Nf-1)*M+N,1);
+    i=1; j=N;
+    for m=1:Nf
+        ex=zeros(N,1); ex(1:N0:end)=1; %excitação só periódica
+        ym = filter(b(m),A(:,m),ex);
+        y(i:j)=y(i:j)+ym; %overlap-add
+        i=i+M;j=j+M;
+    end
+    soundsc(y,fs);
+    pause(9)
+end
+%soundsc(y,fs);
     
     
     
