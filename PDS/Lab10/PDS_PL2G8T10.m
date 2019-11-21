@@ -4,17 +4,22 @@
 %Autor:
 %Pedro Silva
 close all; clc; clear; mkdir('Imagens '); delete Imagens/*.*
+tic
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 1. Sinal de fala e tramas de 25 ms de 10 em 10 ms
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Leia o ficheiro TVFL_FLI_LIM_F00_896@8.wav e ouça o sinal. Filtre o sinal de forna a eliminar a
 % forte componente a 50Hz:
 [x, fs] = audioread('TVFL_FLI_LIM_F00_896@8.wav');
+disp('Sinal original.')
+soundsc(x, fs)
 h=fir1(500,70*2/fs,'high');
 fig1 = figure(1);
-freqz(h,1)
+freqz(h,1); title('Filtro HP');
 print(fig1, '-dpng', 'Imagens/Filtro_HP')
 x1=filter(h,1,x);
+disp('Sinal filtrado')
+soundsc(x1, fs)
 %comparar:
 fig2 = figure(2);
 plot(1:2000,x(1:2000),1:2000,x1(251:2250)),grid on; xlabel('n'); ylabel('x'); title('Sinal original e filtrado'); legend('Original', 'Filtrado');
@@ -72,6 +77,18 @@ r_hatP = ifft(P);
 m = 150;
 xm=xf(:,m);         %frame m = 150
 r_hatm = r_hatP(:,m);
+%%%%%NOTA: Verificacao de aliasing no calculo da DFT no ponto 3a)%%%%%%%%%%
+rP_check = ifft(P); %estimativas para todas as tramas
+m=150; xm=xf(:,m); % trama 150, por exemplo
+rm_check=xcorr(xm,N,'biased'); %estimativa de r da trama 150
+%Nota: os valores de r[-k], estão em rP(Nfft-k+1,m):
+fig7 = figure(7);
+plot(rP_check(:,m)),grid, title('Estimativa da autocorrelaçao com IFFT'); xlabel('k'); ylabel('r')
+print(fig7, '-dpng', 'Imagens/Estimativa_r_IFFT')
+fig8 = figure(8);
+plot(-N:N,rm_check,-255:256,[rP_check(258:512,m);rP_check(1:257,m)],':'), grid on, title('Estimativa da autocorrelaçao com xcorr'); xlabel('k'); ylabel('r')
+print(fig8, '-dpng', 'Imagens/Estimativa_r_xcorr')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 R = toeplitz(r_hatm(1:p));
 % R * a_1 = -r_1; R e 10x10, a_1 e 10x1 e r_1e 10x1
 a_1 = R \ (-1 .*r_hatm(2:p+1));
@@ -160,8 +177,9 @@ for N0 = 20:20:80 %experimente N0=40 e N0=80 (submúltiplos de 80)
     soundsc(y,fs);
     pause(9)
 end
-%soundsc(y,fs);
-    
+
+
+toc
     
     
     
