@@ -47,14 +47,14 @@ phi_cl = phi - gamma * L;
 
 %Falta-nos ainda calcular o Lc
 Lc = 1/(C*inv(eye(2)-phi_cl)*gamma);
-%%%%%%%%%%%%%simular%%%%%%%%%%%%%%%
+
 simulacao = sim('sim7_2');
 fig1 = figure(1);
+%Acho que este plot esta incorrecto
 plot(simulacao.yc.time, simulacao.yc.signals.values, 'b', simulacao.yc1.time, simulacao.yc1.signals.values, 'r'); grid on;xlabel('t'); ylabel('Amplitude'); title('Saida do sistema sem acesso as SV e com acesso as SC (z CC)'); xlim([0 3]);
+print(fig1, '-dpng', 'Imagens/Saida_C_SV_S_SV')
 fig3 = figure(3);
 plot(simulacao.yk.time, simulacao.yk.signals.values, 'ro', simulacao.yc.time, simulacao.yc.signals.values, 'b'); grid on;xlabel('t'); ylabel('Amplitude'); title('Saida do sistema, continua e discretizada (z CC)'); xlim([0 3]);
-fig5 = figure(6);
-plot(simulacao.y2.time, simulacao.y2.signals.values), grid on; xlabel('t'); ylabel('Amplitude'); title('Saida do sistema com phi e gamma implementados manualmente (z CC)'); xlim([0 3]);
 %Polo duplo em z = 0.4
 a = 0.4; b = 0.0;
 p1=-2*a; p2=a^2+b^2;
@@ -62,10 +62,11 @@ L = acker(phi, gamma, [a + 1i * b, a - 1i * b]);
 simulacao = sim('sim7_2');
 fig2 = figure(2);
 plot(simulacao.yc.time, simulacao.yc.signals.values, 'b', simulacao.yc1.time, simulacao.yc1.signals.values, 'r'); grid on;xlabel('t'); ylabel('Amplitude'); title('Saida do sistema sem acesso as SV e com acesso as SC (z = polo duplo)'); xlim([0 3]);
+print(fig1, '-dpng', 'Imagens/Saida_z_duplo')
 fig4 = figure(4);
 plot(simulacao.yk.time, simulacao.yk.signals.values, 'ro', simulacao.yc.time, simulacao.yc.signals.values, 'b'); grid on;xlabel('t'); ylabel('Amplitude'); title('Saida do sistema, continua e discretizada (z = polo duplo)'); xlim([0 3]);
 fig5 = figure(5);
-plot(simulacao.y2.time, simulacao.y2.signals.values), grid on; xlabel('t'); ylabel('Amplitude'); title('Saida do sistema com phi e gamma implementados manualmente (z = polo duplo)'); xlim([0 3]);
+plot(simulacao.y2.time, simulacao.y2.signals.values), grid on;xlabel('t'); ylabel('Amplitude'); title('Saida do sistema, continua e discretizada (z = polo duplo)'); xlim([0 3]);
 
 
 

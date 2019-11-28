@@ -12,6 +12,8 @@ K = 0.391;
 num_d = [0.3679, 0.2642];
 den_d = [1 -1.3679, 0.3679];
 G_d = tf(num_d, den_d);
+%Ou de forma menos estupida
+G_d = c2d(G,1);     %h = 1s
 %Obter espaco de estados atraves da TF
 [A, B, C, D] = tf2ss(num, den);
 %Queremos analisar as variaveis de estado (vector X), portanto usar estes
