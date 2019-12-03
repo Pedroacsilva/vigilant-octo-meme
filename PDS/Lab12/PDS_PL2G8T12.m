@@ -88,12 +88,15 @@ disp('ax=[1,-1.54,2.36,-2.25,2.13,-1.25,0.74]')
 % imp=[1,zeros(1,p)]; aplique este sinal ao filtro IIR H_opt(z) e determine a saída (resposta a impulso)
 % com o comando filter().
 
-%Filtro optimo: H_x(z) * H(z) = H_opt(z)
+%Filtro optimo: H_x(z) * H(z) = H_opt(z). Neste caso, os dois ramos, com
+%v[n] comum a entrada, sao iguais, consequentemente a diferenca entre eles
+%e nula (idealmente) e[n] = 0, para qualquer n 
 
 b_1 = [1 -0.2 -0.8];
+gain = 0.15;
 B_1 = gain .* b_1;
 a_1 = [1 -0.6 -0.27];
-gain = 0.15;
+
 num = conv(a_x, B_1);
 den = 0.05 * a_1;
 [H, w] = freqz(h, 1);
