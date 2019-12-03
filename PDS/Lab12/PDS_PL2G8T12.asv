@@ -99,17 +99,13 @@ den = 0.05 * a_1;
 [H, w] = freqz(h, 1);
 H_opt = freqz(num, den);
 fig4 = figure(4);
-plot(w, abs(H), w, abs(H_opt)); grid on; xlabel('z'); ylabel('H(z)'); title('Resposta em frequencia dos filtros H e H_{optimo}'); legend('H(z)', 'H_{optimo}(z)'); xlim([0 pi])
-print(fig4, '-dpng', 'Imagens/Resp_Freq_H_H_optimo')
+plot(w, abs(H), w, abs(H_opt)); grid on; xlabel('z'); ylabel('H(z)'); title('Filtros H e H_{optimo}'); legend('H(z)', 'H_{optimo}(z)');
+
 impulso = [1, zeros(1,p)];
 h_opt = filter(num, den, impulso);
-h_wiener = filter(h, 1, impulso);
-fig5 = figure(5);
-frequencias = linspace(-pi, pi, size(h_opt,2));
-fig5 = figure(5);
-plot(frequencias, h_wiener, frequencias, h_opt);  grid on; xlabel('z'); ylabel('H(z)'); title('Resposta a impulso dos filtros H e H_{optimo}'); legend('H(z)', 'H_{optimo}(z)'); xlim([-pi pi])
-print(fig5, '-dpng', 'Imagens/Resp_Imp_H_H_optimo')
-MSG = ['Erro maximo entre h_opt e h_wiener: ', num2str(max(abs(h_opt - h_wiener))), '.'];
-disp(MSG)
-MSG = ['Erro maximo entre H_optimo e H_wiener: ', num2str(max(abs(H_opt - H))), '.'];
-disp(MSG)
+
+
+
+
+
+
