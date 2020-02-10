@@ -7,7 +7,7 @@ close all; clear all; clc; mkdir('Imagens ');delete Imagens/*.*
 Csim = eye(2);
 Dsim = [0; 0];
 %Queremos que o modelo continuo equivalente, em malha fechada, tenha o
-%polinomio caracteristico s^2 + 1.8s + 1.25. (???????????)
+%polinomio caracteristico s^2 + 1.8s + 1.25.
 a = [1 1.8 1.25];
 wnh = 0.4; G_dc = 1;
 phi_12 = 1.5;
