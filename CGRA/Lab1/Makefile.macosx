@@ -1,0 +1,10 @@
+all: opengl_sdl opengl_glut
+
+opengl_sdl: opengl_sdl.cpp
+	g++ opengl_sdl.cpp -I/opt/local/include -L/opt/local/lib -lSDL2  -framework OpenGL -o opengl_sdl
+
+opengl_glut: opengl_glut.cpp
+	g++ -o opengl_glut opengl_glut.cpp  -I/opt/local/include -L/opt/local/lib  -lglut -framework OpenGL
+
+clean:
+	rm -r opengl_sdl opengl_glut *~
