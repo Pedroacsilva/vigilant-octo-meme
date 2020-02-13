@@ -18,7 +18,9 @@ Autores:
 
 
 GLUquadric * myQuad;    //Cilindro
-float rot_x, rot_y, rot_z = 0.0;      //Rotações sobre os 3 eixos
+int newTime, oldTime, deltaTime = 0;             //Variáveis para animar rotações
+int newTimeX, newTimeY, newTimeZ = 0;        //Angulo de rotacao sobre cada eixo
+bool rot_x, rot_y, rot_z = false;      //Rotações sobre os 3 eixos
 bool post_x, post_y, post_z = false;    //Pós-Translações sobre os 3 eixos
 bool pre_x, pre_y, pre_z = false;        //Pré translações sobre os 3 eixos
 /*https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glClearColor.xhtml
@@ -73,16 +75,25 @@ void DrawGLScene( void ) {
   
   //------------------------CILINDRO------------------
   glTranslatef(3*post_x, 3*post_y, 3*post_z);     //Pós translações
+  //glRotatef(0.02 * newTime , rot_x, rot_y, rot_z);    //rot_xyz definem as componentes sobre os eixos xyz. 1 ou 0
+  //calcular angulos de rotacoes
+  if(rot_x)
+    newTimeX += deltaTime;
+  if(rot_y)
+    newTimeY += deltaTime;
+  if(rot_z)
+    newTimeZ += deltaTime;
+  glRotatef(0.02 * newTimeX, 1.0, 0.0, 0.0);     //Rotacao sobre o eixo x
+  glRotatef(0.02 * newTimeY, 0.0, 1.0, 0.0);     //Rotacao sobre o eixo y
+  glRotatef(0.02 * newTimeZ, 0.0, 0.0, 1.0);     //Rotacao sobre o eixo z
+  glTranslatef(3*pre_x, 3*pre_y, 3*pre_z);
   gluCylinder(myQuad, 1.0, 1.0, 2.0, 10, 10);
   //Parece uma toróide pois não desenhamos os topos. Temos os vértices que formam um cilindro, mas nao ligamos os vertices das bases.
+  //De forma mais estupida mas mais percebivel, desenhámos um canneloni
   //O cilindro está directammente à nossa frente, deitado sobre o eixo z, daí so vermos o perfil circular (??? há uma forma mais elegante de dizer isto)
   //(Mas então porquê um raio interior e exterior?)
-  //glRotatef(2graus/segundo, )
-  glTranslatef(3*pre_x, 3*pre_y, 3*pre_z);
- 
+  //2 graus / segundo = 0.002 graus / milisegundo
   
-
-
   glutSwapBuffers();            //Se estivermos a trabalhar com 2 buffers (double buffered), trocar os buffers. O back buffer se torna undefined (desconhecido). glFlush implicito 
 }
 void keyPressed( unsigned char key, int x, int y ) {
@@ -99,23 +110,40 @@ void keyPressed( unsigned char key, int x, int y ) {
     post_z = !post_z;
     printf("EVENT: post_z = %i.\n", post_z);
     break;
-  case 'x':
+  case 'a':
     pre_x = !pre_x;
     printf("EVENT: pre_x = %i.\n", pre_x);
     break;
-  case 'y':
+  case 's':
     pre_y = !pre_y;
     printf("EVENT: pre_y = %i.\n", pre_y);
     break;
-  case 'z':
+  case 'd':
     pre_z = !pre_z;
     printf("EVENT: pre_z = %i.\n", pre_z);
+    break;
+  case 'x':
+    rot_x = !rot_x;
+    printf("EVENT: rot_x = %i.\n", rot_x);
+    break;
+  case 'y':
+    rot_y = !rot_y;
+    printf("EVENT: rot_y = %i.\n", rot_y);
+    break;
+  case 'z':
+    rot_z = !rot_z;
+    printf("EVENT: rot_z = %i.\n", rot_z);
     break;
   }
 }
 /*https://www.opengl.org/resources/libraries/glut/spec3/node20.html
 */
 void idle( void ) {
+  deltaTime = newTime - oldTime;
+  oldTime = newTime;
+  newTime = glutGet(GLUT_ELAPSED_TIME); //https://www.opengl.org/resources/libraries/glut/spec3/node70.html
+  //Number of milliseconds since glutInit called (or first call to glutGet(GLUT_ELAPSED_TIME)).
+  printf("\rRunning time: %i ms. DeltaTime = %i.", newTime, deltaTime); 
   glutPostRedisplay();        //Marca que a janela actual deve ser redesenhada. (Porque não chamar esta função no final de cada SwapBuffers, para o buffer ser imediatamente desenhado no ecrã?)
 }
 /*https://www.opengl.org/resources/libraries/glut/spec3/node12.html -> DisplayMode
