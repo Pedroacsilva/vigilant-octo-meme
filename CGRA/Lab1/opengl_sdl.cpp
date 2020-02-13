@@ -1,3 +1,7 @@
+/*COMPUTAÇÃO GRÁFICA E REALIDADE AUMENTADA, 2019/2020
+Autores:
+-Gabriel Lopes
+-Pedro Silva*/
 #include <stdio.h>
 #include <stdint.h>
 #include <assert.h>
@@ -21,8 +25,13 @@ typedef int32_t b32;
 #define WinHeight 480
 SDL_Window *Window;
 
+
+float rotacao = 0.0f;   //Variável global que define o ângulo de rotação. Global porque a preguiça é muita.
+
 void InitGL(int Width, int Height) {
-    glClearColor( 0.0, 1.0, 0.0, 1.0 );
+	glPointSize(4.0);   //Como quero desenhar a origem, acrescentei esta linha.
+    //glClearColor( 0.0, 1.0, 0.0, 1.0 );			//Limpar color buffer com Verde
+    glClearColor(0.2, 0.2, 0.2, 1.0);					//Limpar color buffer com algo menos chocante
     glClearDepth( 1.0 );	
     glDepthFunc(GL_LESS);
     glEnable(GL_DEPTH_TEST);                         
@@ -46,6 +55,54 @@ void DrawGLScene( void ) {
   glLoadIdentity();
 
 /* YOUR CODE HERE */
+
+  glTranslatef(0.0, 0.0, -6.0);  //Aplicar uma translação a tudo que iremos desenhar.
+  glRotatef(rotacao, 0.0, 0.0, 1.0);   //Rodar 'rotação' graus em torno do eixo z
+
+    //--------------------PONTO--------------------------------
+  /*Quero desenhar a origem por onde passa o eixo de rotacao.*/
+  glBegin(GL_POINTS);
+  glColor3f(1.0, 1.0, 0.0);   //Laranja
+  glVertex3f(0.0, 0.0, 0.0);
+  glEnd();
+  //-------------------------------TRIANGULO-------------------------------------------------------
+    /*Vamos desenhar um triangulo com vértices em (0, 1), (1,-1) e (-1, -1)
+        A
+      /   \
+     /     \
+    /       \
+   /         \
+  B-----------C
+  */
+  glTranslatef(-2.0, 0.0, 0.0);
+  glBegin(GL_POLYGON);          //Começar o desenho dum polígono A
+
+  glColor3f(1.0, 0.0, 0.0);     //Cor A
+  glVertex3f(0.0, 1.0, 0.0);    //Coordenadas A
+  glColor3f(0.0, 1.0, 0.0);     //Cor B
+  glVertex3f(1.0, -1.0, 0.0);   //Coordenadas B
+  glColor3f(0.0, 0.0, 1.0);     //Cor C
+  glVertex3f(-1.0, -1.0, 0.0);  //Coordenadas C
+  glEnd();        //Terminar o desenho do polígono A
+  //-------------------------------QUADRADO----------------------------------------------------
+  /*Quadrado com vértices em (-1,1), (1,1), (1,-1), (-1,-1)
+  A-----------B
+  |           |
+  |           |
+  |           |
+  |           |
+  D-----------C
+*/
+  glTranslatef(4.0, 0.0, 0.0);  //Quadrado 4 unidades à direita do triângulo. (Só o quadrado sofre a translação)
+  glBegin(GL_QUADS);        //Começar o desenho dum quadrado B
+
+  glVertex3f(-1.0, 1.0, 0.0);   //Coordenadas A
+  glVertex3f(1.0, 1.0, 0.0);    //Coordenadas B
+  glVertex3f(1.0, -1.0, 0.0);   //Coordenadas C
+  glVertex3f(-1.0, -1.0, 0.0);  //Coordenadas D
+
+
+  glEnd();          //Terminar desenho do quadrado B
 
   SDL_GL_SwapWindow(Window);
 }
@@ -95,10 +152,17 @@ int main (int ArgCount, char **Args) {
 		    }		      
 		    break;
 		}
+		/*default:					//default = idle, penso que é uma aproximiação razoável
+			rotacao += 0.1;			//incrementar angulo de rotacao
+			printf("Rotacao = %f.\n", rotacao);*/
+		//Após correr o programa, o default só corre quando mexo  rato na janela
 	    }
 	}
  
 	DrawGLScene();
+	//Idle?
+	rotacao += 0.1;
+	printf("Rotacao = %f.\n", rotacao);
     } // Main loop
     return 0;
 }
