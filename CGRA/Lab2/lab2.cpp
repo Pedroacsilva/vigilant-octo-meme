@@ -17,7 +17,9 @@ Autores:
 
 
 
-GLUquadric * myQuad;    //Cilindro
+GLUquadric * cylinder;    //Cilindro
+GLUquadric * sphere;    //esfera
+GLUquadric * disk;    //disk
 int newTime, oldTime, deltaTime = 0;             //Variáveis para animar rotações
 int newTimeX, newTimeY, newTimeZ = 0;        //Angulo de rotacao sobre cada eixo
 bool rot_x, rot_y, rot_z = false;      //Rotações sobre os 3 eixos
@@ -32,7 +34,10 @@ https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glLoadIdentity.xml
 https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/gluPerspective.xml*/
 
 void InitGL(int Width, int Height) {
-  myQuad = gluNewQuadric();
+  //Inicializar objectos a desenhar
+  cylinder = gluNewQuadric();
+  sphere = gluNewQuadric();
+  disk = gluNewQuadric();
   glPointSize(4.0);
   glClearColor( 0.5, 0.5, 0.5, 1.0 );     //especificar valores a escrever nos color buffers quando chamamos glClear
   glClearDepth( 1.0 );                    //E quando chamamos glClearDepth (limpar o depth buffer: https://www.opengl.org/archives/resources/faq/technical/depthbuffer.htm)
@@ -64,16 +69,16 @@ void DrawGLScene( void ) {
   glClear( GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);     //Limpar buffers de acordo com ClearColor e ClearDepth.
   glLoadIdentity();
   /* YOUR CODE HERE */
-  //GLUquadric * myQuad = gluNewQuadric();
+  //GLUquadric * cylinder = gluNewQuadric();
   glTranslatef(0.0, 0.0, -6.0);
    //------------------------ORIGEM--------------------
   glBegin(GL_POINTS);
-  glColor3f(1.0, 1.0, 0.0);   //Laranja
+  glColor3f(1.0, 1.0, 0.0);   //Amarelo
   glVertex3f(0.0, 0.0, 0.0);
   glEnd();
 
   
-  //------------------------CILINDRO------------------
+ 
   glTranslatef(3*post_x, 3*post_y, 3*post_z);     //Pós translações
   //glRotatef(0.02 * newTime , rot_x, rot_y, rot_z);    //rot_xyz definem as componentes sobre os eixos xyz. 1 ou 0
   //calcular angulos de rotacoes
@@ -87,7 +92,20 @@ void DrawGLScene( void ) {
   glRotatef(0.02 * newTimeY, 0.0, 1.0, 0.0);     //Rotacao sobre o eixo y
   glRotatef(0.02 * newTimeZ, 0.0, 0.0, 1.0);     //Rotacao sobre o eixo z
   glTranslatef(3*pre_x, 3*pre_y, 3*pre_z);
-  gluCylinder(myQuad, 1.0, 1.0, 2.0, 10, 10);
+   //------------------------CILINDRO------------------
+  gluCylinder(cylinder, 1.0, 1.0, 2.0, 10, 10);
+  //------------------------ESFERA (TOPO CILINDRO)------
+  glTranslatef(0.0, 0.0, 2.0);        //Passar para o topo do cilindro
+  //https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/gluSphere.xml
+  glColor3f(0.0, 0.0, 1.0);       //Azul
+  gluSphere(sphere, 1.0, 10, 10);
+  //-------------------------DISCO (BASE CILINDRO)--------
+  //NOTA: Um disco é um cilindro baixinho
+  glTranslatef(0.0, 0.0, -2.3);     //Passar para a base do cilindro
+  glColor3f(0.0, 1.0, 0.0);       //Verde
+  gluCylinder(disk, 1.0, 1.0, 0.3, 10, 10);
+
+
   //Parece uma toróide pois não desenhamos os topos. Temos os vértices que formam um cilindro, mas nao ligamos os vertices das bases.
   //De forma mais estupida mas mais percebivel, desenhámos um canneloni
   //O cilindro está directammente à nossa frente, deitado sobre o eixo z, daí so vermos o perfil circular (??? há uma forma mais elegante de dizer isto)
