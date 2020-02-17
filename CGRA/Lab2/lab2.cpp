@@ -76,9 +76,6 @@ void DrawGLScene( void ) {
   glColor3f(1.0, 1.0, 0.0);   //Amarelo
   glVertex3f(0.0, 0.0, 0.0);
   glEnd();
-
-  
- 
   glTranslatef(3*post_x, 3*post_y, 3*post_z);     //Pós translações
   //glRotatef(0.02 * newTime , rot_x, rot_y, rot_z);    //rot_xyz definem as componentes sobre os eixos xyz. 1 ou 0
   //calcular angulos de rotacoes
@@ -100,7 +97,7 @@ void DrawGLScene( void ) {
   glColor3f(0.0, 0.0, 1.0);       //Azul
   gluSphere(sphere, 1.0, 10, 10);
   //-------------------------DISCO (BASE CILINDRO)--------
-  //NOTA: Um disco é um cilindro baixinho
+
   glTranslatef(0.0, 0.0, -2.3);     //Passar para a base do cilindro
   glColor3f(0.0, 1.0, 0.0);       //Verde
   gluCylinder(disk, 1.0, 1.0, 0.3, 10, 10);
