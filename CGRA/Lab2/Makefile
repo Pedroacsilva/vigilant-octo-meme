@@ -6,4 +6,4 @@ all: lab2
 lab2: lab2.cpp
 	g++ -o lab2 lab2.cpp -lGLU -lglut -lGL
 clean:
-	rm *.o *.out
+	rm lab2

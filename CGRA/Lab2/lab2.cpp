@@ -15,16 +15,19 @@ Autores:
 #include <GL/glut.h>
 #include <stdio.h>
 
-
+typedef GLfloat Matrix4x4 [4][4];     //Definir uma variavel para matrizes 4x4
+Matrix4x4 matTrans3D;           //Matriz para fazer transformações 3d (translacoes + rotacoes)
 
 GLUquadric * cylinder;    //Cilindro
 GLUquadric * sphere;    //esfera
 GLUquadric * disk;    //disk
+GLUquadric * sphere2; //esfera afastada
 int newTime, oldTime, deltaTime = 0;             //Variáveis para animar rotações
 int newTimeX, newTimeY, newTimeZ = 0;        //Angulo de rotacao sobre cada eixo
 bool rot_x, rot_y, rot_z = false;      //Rotações sobre os 3 eixos
 bool post_x, post_y, post_z = false;    //Pós-Translações sobre os 3 eixos
 bool pre_x, pre_y, pre_z = false;        //Pré translações sobre os 3 eixos
+bool h_matrix = false;        //Variável que controla se usamos matrizes homogeneas ou primitivas do opengl
 /*https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glClearColor.xhtml
 https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glClearDepth.xhtml
 https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDepthFunc.xhtml
@@ -38,6 +41,15 @@ void InitGL(int Width, int Height) {
   cylinder = gluNewQuadric();
   sphere = gluNewQuadric();
   disk = gluNewQuadric();
+  sphere2 = gluNewQuadric();
+  //Inicializar matriz de transformações
+  //por tudo a 0
+  /*for(int i = 0 ; i < 4*4; i++)
+    matTrans3D[i] = 0.0f;*/
+  //Identidade
+  for(int i = 0; i < 4; i++)
+     matTrans3D[i][i] = 1.0f;
+    
   glPointSize(4.0);
   glClearColor( 0.5, 0.5, 0.5, 1.0 );     //especificar valores a escrever nos color buffers quando chamamos glClear
   glClearDepth( 1.0 );                    //E quando chamamos glClearDepth (limpar o depth buffer: https://www.opengl.org/archives/resources/faq/technical/depthbuffer.htm)
@@ -76,7 +88,15 @@ void DrawGLScene( void ) {
   glColor3f(1.0, 1.0, 0.0);   //Amarelo
   glVertex3f(0.0, 0.0, 0.0);
   glEnd();
-  glTranslatef(3*post_x, 3*post_y, 3*post_z);     //Pós translações
+  //Pós translações
+  if(h_matrix){
+    matTrans3D[0][4] = post_x;
+    matTrans3D[1][4] = post_y;
+    matTrans3D[3][4] = post_z;
+    glMultMatrixf(*matTrans3D);
+  }
+  else
+    glTranslatef(3*post_x, 3*post_y, 3*post_z);     
   //glRotatef(0.02 * newTime , rot_x, rot_y, rot_z);    //rot_xyz definem as componentes sobre os eixos xyz. 1 ou 0
   //calcular angulos de rotacoes
   if(rot_x)
@@ -98,9 +118,14 @@ void DrawGLScene( void ) {
   gluSphere(sphere, 1.0, 10, 10);
   //-------------------------DISCO (BASE CILINDRO)--------
 
-  glTranslatef(0.0, 0.0, -2.3);     //Passar para a base do cilindro
+  glTranslatef(0.0, 0.0, -2.0);     //Passar para a base do cilindro
   glColor3f(0.0, 1.0, 0.0);       //Verde
-  gluCylinder(disk, 1.0, 1.0, 0.3, 10, 10);
+  gluDisk(disk, 0.0, 1.0, 10, 10);
+  //----------------ESFERA(AFASTADA)----------------------------
+  glTranslatef(1.0, 0.0, -1.0);   //Colocar o centro da esfera
+  glColor3f(1.0, 0.0, 1.0);      //Roxo(?)
+  gluSphere(sphere2, 1.0, 10, 10);
+
 
 
   //Parece uma toróide pois não desenhamos os topos. Temos os vértices que formam um cilindro, mas nao ligamos os vertices das bases.
@@ -115,39 +140,52 @@ void keyPressed( unsigned char key, int x, int y ) {
   switch( key ) {
   case 'q':
     post_x = !post_x;
-    printf("EVENT: post_x = %i.\n", post_x);
+    printf("\rRunning time: %i ms. DeltaTime = %i. EVENT: post_x = %i.", newTime, deltaTime, post_x);
     break;
   case 'w':
     post_y = !post_y;
-    printf("EVENT: post_y = %i.\n", post_y);
+    printf("\rRunning time: %i ms. DeltaTime = %i. EVENT: post_y = %i.", newTime, deltaTime, post_y);
     break;
   case 'e':
     post_z = !post_z;
-    printf("EVENT: post_z = %i.\n", post_z);
+    printf("\rRunning time: %i ms. DeltaTime = %i. EVENT: post_z = %i.", newTime, deltaTime, post_z);
     break;
   case 'a':
     pre_x = !pre_x;
-    printf("EVENT: pre_x = %i.\n", pre_x);
+    printf("\rRunning time: %i ms. DeltaTime = %i. EVENT: pre_x = %i.", newTime, deltaTime, pre_x);
     break;
   case 's':
     pre_y = !pre_y;
-    printf("EVENT: pre_y = %i.\n", pre_y);
+    printf("\rRunning time: %i ms. DeltaTime = %i. EVENT: pre_y = %i.", newTime, deltaTime, pre_y);
     break;
   case 'd':
     pre_z = !pre_z;
-    printf("EVENT: pre_z = %i.\n", pre_z);
+    printf("\rRunning time: %i ms. DeltaTime = %i. EVENT: pre_z = %i.", newTime, deltaTime, pre_z);
     break;
   case 'x':
     rot_x = !rot_x;
-    printf("EVENT: rot_x = %i.\n", rot_x);
+    printf("\rRunning time: %i ms. DeltaTime = %i. EVENT: rot_x = %i.", newTime, deltaTime, rot_x);
     break;
   case 'y':
     rot_y = !rot_y;
-    printf("EVENT: rot_y = %i.\n", rot_y);
+    printf("\rRunning time: %i ms. DeltaTime = %i. EVENT: rot_y = %i.", newTime, deltaTime, rot_y);
     break;
   case 'z':
     rot_z = !rot_z;
-    printf("EVENT: rot_z = %i.\n", rot_z);
+    printf("\rRunning time: %i ms. DeltaTime = %i. EVENT: rot_z = %i.", newTime, deltaTime, rot_z);
+    break;
+  case 'r':
+    post_x = post_y = post_z = pre_z = pre_y = pre_x = rot_x = rot_y = rot_z = false;
+    printf("\rRunning time: %i ms. DeltaTime = %i. EVENT: Reset.", newTime, deltaTime);
+    break;
+  case 'm':
+    h_matrix != h_matrix;
+    printf("\rRunning time: %i ms. DeltaTime = %i. EVENT: Homogenous Matrices toggled.", newTime, deltaTime);
+    break;
+
+  case 'o':
+    printf("\nGoodbye.\n");
+    exit(EXIT_SUCCESS);
     break;
   }
 }
