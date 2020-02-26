@@ -30,7 +30,9 @@ enum Buffer_IDs { ArrayBuffer, NumBuffers };
 enum Attrib_IDs { vPosition = 0 };
 
 int timevariable, newtime, oldtime, deltatime = 0;
-int timeLoc, colorLoc;
+int timeLoc[4]; 
+int colorLoc[4];
+int shader_switch = 0;
 float color_shader[3];
 GLuint  VAOs[NumVAOs];
 GLuint  Buffers[NumBuffers];
@@ -39,7 +41,7 @@ GLfloat  vertices[NumVertices][2] = {{ -0.90, -0.90 },{  0.85, -0.90 }, { -0.90,
 				     {  0.90, -0.85 }, {  0.90,  0.90 },{ -0.85,  0.90 } // triangle 2
 };
 
-DEECShader * myprog;
+DEECShader * myprog, * prog3_2, * prog3_3, * prog3_4;
 /*
 https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGenVertexArrays.xhtml
 https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
@@ -55,10 +57,31 @@ void init() {
     glGenBuffers(NumBuffers, Buffers);          //Gerar simbolos para 1 VBOs no device, armazenados em Buffers
     glBindBuffer(GL_ARRAY_BUFFER, Buffers[ArrayBuffer]);        //Trabalhar no buffer de indice 0
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices),vertices, GL_STATIC_DRAW);   //Criar buffer e transferir dados dos vertices, indicando que nao iram mudar (STATIC DRAW)
+
     myprog->loadShaders("triangles.vert","triangles_color.frag");     //Indicar os shaders com que trabalhar
     myprog->linkShaderProgram();
-    GLuint timeLoc = glGetUniformLocation(myprog->shaderprogram, "timepar");
-    GLuint colorLoc = glGetUniformLocation(myprog->shaderprogram, "color_change");
+
+    prog3_2->loadShaders("triangles_y.vert", "triangles_color.frag");
+    prog3_2->linkShaderProgram();
+
+    prog3_3->loadShaders("triangles_scale.vert", "triangles_color.frag");
+    prog3_3->linkShaderProgram();
+
+    prog3_4->loadShaders("triangles_rotate.vert", "triangles_color.frag");
+    prog3_4->linkShaderProgram();
+
+    timeLoc[0] = glGetUniformLocation(myprog->shaderprogram, "timepar");
+    colorLoc[0] = glGetUniformLocation(myprog->shaderprogram, "color_change");
+
+    timeLoc[1] = glGetUniformLocation(prog3_2->shaderprogram, "timepar");
+    colorLoc[1] = glGetUniformLocation(prog3_2->shaderprogram, "color_change");
+
+    timeLoc[2] = glGetUniformLocation(prog3_3->shaderprogram, "timepar");
+    colorLoc[2] = glGetUniformLocation(prog3_3->shaderprogram, "color_change");
+
+    timeLoc[3] = glGetUniformLocation(prog3_4->shaderprogram, "timepar");
+    colorLoc[3] = glGetUniformLocation(prog3_4->shaderprogram, "color_change");
+
     glVertexAttribPointer(vPosition, 2, GL_FLOAT,  GL_FALSE, 0, BUFFER_OFFSET(0));      //especificar formato de dados do VBO (stride, offset, etc...)
     glEnableVertexAttribArray(vPosition);               //Ligar o VAO vPosition
 }
@@ -68,23 +91,101 @@ void init() {
 https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawArrays.xhtml
 */
 void display() {
-    myprog->startUsing();
+    /*myprog->startUsing();
     glClear(GL_COLOR_BUFFER_BIT);           //Limpar color buffer
     glBindVertexArray(VAOs[Triangles]);        //Trabalhar no VAO Triangles
-    glUniform1f(timeLoc, timevariable);
-    glUniform3f(colorLoc, color_shader[0], color_shader[1], color_shader[2]);
+    glUniform1f(timeLoc[0], timevariable);
+    glUniform3f(colorLoc[0], color_shader[0], color_shader[1], color_shader[2]);
+
+    glUniform1f(timeLoc[1], timevariable);
+    glUniform3f(colorLoc[1], color_shader[0], color_shader[1], color_shader[2]);
+
+    glUniform1f(timeLoc[2], timevariable);
+    glUniform3f(colorLoc[2], color_shader[0], color_shader[1], color_shader[2]);
+
+    glUniform1f(timeLoc[3], timevariable);
+    glUniform3f(colorLoc[3], color_shader[0], color_shader[1], color_shader[2]);
+
+
     glDrawArrays(GL_TRIANGLES, 0, NumVertices);     //Desenhar Triangulos, o array com indice 0 e desenhar NumVertices
     glFlush();
-    myprog->stopUsing();
+    myprog->stopUsing();*/
+    /*myprog->startUsing();
+    glClear(GL_COLOR_BUFFER_BIT);           //Limpar color buffer
+    glBindVertexArray(VAOs[Triangles]);        //Trabalhar no VAO Triangles
+    glUniform1f(timeLoc[0], timevariable);
+    glUniform3f(colorLoc[0], color_shader[0], color_shader[1], color_shader[2]);
+    glDrawArrays(GL_TRIANGLES, 0, NumVertices);     //Desenhar Triangulos, o array com indice 0 e desenhar NumVertices
+    glFlush();
+    myprog->stopUsing();*/
+    switch(shader_switch){
+        case 0:{
+            myprog->startUsing();
+            glClear(GL_COLOR_BUFFER_BIT);           //Limpar color buffer
+            glBindVertexArray(VAOs[Triangles]);        //Trabalhar no VAO Triangles
+            glUniform1f(timeLoc[0], timevariable);
+            glUniform3f(colorLoc[0], color_shader[0], color_shader[1], color_shader[2]);
+            glDrawArrays(GL_TRIANGLES, 0, NumVertices);     //Desenhar Triangulos, o array com indice 0 e desenhar NumVertices
+            glFlush();
+            myprog->stopUsing();
+            break;
+        }
+        case 1:{
+            prog3_2->startUsing();
+            glClear(GL_COLOR_BUFFER_BIT);           //Limpar color buffer
+            glBindVertexArray(VAOs[Triangles]);        //Trabalhar no VAO Triangles
+            glUniform1f(timeLoc[1], timevariable);
+            glUniform3f(colorLoc[1], color_shader[0], color_shader[1], color_shader[2]);
+            glDrawArrays(GL_TRIANGLES, 0, NumVertices);     //Desenhar Triangulos, o array com indice 0 e desenhar NumVertices
+            glFlush();
+            prog3_2->stopUsing();
+            break;
+        }
+        case 2:{
+            prog3_3->startUsing();
+            glClear(GL_COLOR_BUFFER_BIT);           //Limpar color buffer
+            glBindVertexArray(VAOs[Triangles]);        //Trabalhar no VAO Triangles
+            glUniform1f(timeLoc[2], timevariable);
+            glUniform3f(colorLoc[2], color_shader[0], color_shader[1], color_shader[2]);
+            glDrawArrays(GL_TRIANGLES, 0, NumVertices);     //Desenhar Triangulos, o array com indice 0 e desenhar NumVertices
+            glFlush();
+            prog3_3->stopUsing();
+            break;
+        }
+        case 3:{
+            prog3_4->startUsing();
+            glClear(GL_COLOR_BUFFER_BIT);           //Limpar color buffer
+            glBindVertexArray(VAOs[Triangles]);        //Trabalhar no VAO Triangles
+            glUniform1f(timeLoc[3], timevariable);
+            glUniform3f(colorLoc[3], color_shader[0], color_shader[1], color_shader[2]);
+            glDrawArrays(GL_TRIANGLES, 0, NumVertices);     //Desenhar Triangulos, o array com indice 0 e desenhar NumVertices
+            glFlush();
+            prog3_4->stopUsing();
+            break;
+        }
+    }
 }
 
 void keyPressed( unsigned char key, int x, int y ) {
   switch( key ) {
   case 27:
   case 'q' :
-  case 'Q' :
+  case 'Q' :{
+    myprog->cleanup();
+    prog3_2->cleanup();
+    prog3_3->cleanup();
+    prog3_4->cleanup();
     exit( EXIT_SUCCESS );
     break;
+    }
+  case 's':{
+    if(shader_switch != 3)
+        shader_switch++;
+    else
+        shader_switch = 0;
+    printf("\nEVENT: shader changed: %i.\n", shader_switch);
+    break;
+  }
   /*case 'y' :            //Mudar shader para variar y sinusoidalmente
         break;
   case 's' :            //Usar shader para scaling
@@ -115,9 +216,9 @@ void idle(void){
     /*color_shader[0] = rand() % 255 / 255.0;
     color_shader[1] = rand() % 255 / 255.0;
     color_shader[2] = rand() % 255 / 255.0;*/
-    color_shader[0] = newtime % 255 / 255.0;
-    color_shader[1] = newtime % 255 / 255.0;
-    color_shader[2] = newtime % 255 / 255.0;
+    color_shader[0] = (newtime / 100) % 255 / 255.0;
+    color_shader[1] = (newtime / 50) % 255 / 255.0;
+    color_shader[2] = (newtime / 25) % 255 / 255.0;
   printf("\rtimevariable: %i. R = %f. G = %f. B = %f.", timevariable, color_shader[0], color_shader[1], color_shader[2]); 
   glutPostRedisplay();        //Marca que a janela actual deve ser redesenhada.
 
@@ -144,8 +245,11 @@ int main(int argc, char** argv) {
 #endif
     glutKeyboardFunc( keyPressed );
     glutIdleFunc( idle );       //Definir callback function para no events (idle)
-
+    glutSetWindowTitle("LAB 3 Triangles.");
     myprog = new DEECShader;
+    prog3_2 = new DEECShader;
+    prog3_3 = new DEECShader;
+    prog3_4 = new DEECShader;
     init();
     glutDisplayFunc(display);
     glutMainLoop();
