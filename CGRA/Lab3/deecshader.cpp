@@ -37,6 +37,11 @@ GLuint DEECShader::loadShaders(const char * vertex_file_path,const char * fragme
     vertexshader = glCreateShader(GL_VERTEX_SHADER);
 
     /* Send the vertex shader source code to GL */
+    /*
+    https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glShaderSource.xhtml
+    https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glCompileShader.xhtml
+    https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glGetShaderiv.xml
+    */
     /* Note that the source code is NULL character terminated. */
     /* GL will automatically detect that therefore the length info can be 0 in this case (the last parameter) */
     glShaderSource(vertexshader, 1, (const GLchar**)&vertexsource, 0);
