@@ -1,0 +1,27 @@
+all: lines_mac triangles_mac
+
+
+lines_mac: lines.o deecshader.o deecshader.h
+	g++ -g lines.o deecshader.o -L/opt/local/lib -lSDL2   -framework OpenGL -o lines_mac
+
+lines.o: lines.cpp deecshader.h
+	g++ -c -g lines.cpp -I/opt/local/include
+
+deecshader.o: deecshader.cpp deecshader.h
+	g++ -c -g deecshader.cpp
+
+
+triangles_mac: triangles.o deecshader.o
+	   g++ -g triangles.o deecshader.o -o triangles_mac -I/opt/local/include -L/opt/local/lib -framework GLUT  -framework OpenGL
+
+triangles.o: triangles.cpp deecshader.h
+	     g++ -c -g triangles.cpp
+
+lines_mac2: lines.cpp deecshader.cpp deecshader.h
+	g++ -g lines.cpp -I/opt/local/include -L/opt/local/lib -lSDL2  -framework OpenGL -o lines_mac
+
+
+triangles_mac2: triangles.cpp
+	   g++ -g triangles.cpp -o triangles_mac -I/opt/local/include -L/opt/local/lib -lglew -framework GLUT  -framework OpenGL
+clean:
+	rm -f lines_mac triangles_mac  *.o *~
