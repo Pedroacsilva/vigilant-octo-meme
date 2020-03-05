@@ -1,8 +1,12 @@
 #version 330 core
+
+//INPUT DATA
 layout(location = 0) in vec3 vertexPosition_modelspace;
+
+//UNIFORM DATA
+uniform mat4 MVPMatrix;
+
 void main(){
-  gl_Position.xyz = vertexPosition_modelspace;
-  gl_Position.z = 1.0;
-  gl_Position.w = 1.0;
+	gl_Position = MVPMatrix * vec4(vertexPosition_modelspace, 1);
 }
 
