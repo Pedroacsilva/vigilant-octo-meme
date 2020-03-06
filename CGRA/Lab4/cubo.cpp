@@ -18,7 +18,8 @@ using namespace std;
 #include <stdlib.h>
 #define BUFFER_OFFSET(i) ((char *)NULL + (i)) 
 
-GLuint VAOId_cube, VBO_cube_position, MVPID;
+GLuint VAOId_cube, VBO_cube_position, MVPID, CubePosID;
+unsigned int timeVariable, newTime, oldTime, deltaTime;
 
 DEECShader * myprog;
 
@@ -64,6 +65,16 @@ static const GLfloat vertices[] = {
      }; 
 
 
+GLfloat cube_centers[] = {
+    0.0, 0.0, 0.0,          //Primeiro cubo em (0, 0, 0)
+    0.0, 2.0, 0.0,          //Segundo cubo em (0, 2, 0)
+    2.0, 0.0, 0.0           //Terceiro cubo em (2, 0, 0) 
+};
+
+GLfloat cores[NumVertices];
+
+
+
 
 
 void init(){
@@ -75,6 +86,7 @@ void init(){
     myprog->loadShaders("cubo.vert","cubo.frag");     //Indicar os shaders com que trabalhar
     myprog->linkShaderProgram();
     MVPID = glGetUniformLocation(myprog->shaderprogram, "MVPMatrix");
+    //CubePosID = glGetUniformLocation(myprog->shaderprogram, "CubePos");
     glVertexAttribPointer(
                             0,          //localizacao do atributo. Deve ser concordante com layout do shader
                             3,          //tamanho dos dados
@@ -84,26 +96,61 @@ void init(){
                             BUFFER_OFFSET(0)    //offset
                             );
     glEnableVertexAttribArray(0);
+    //Inicializar cores
+    for(int i = 0; i < NumVertices * 3; i = i + 3){
+        cores[i] = rand() % 255 / 255.0;            //R
+        cores[i + 1] = rand() % 255 / 255.0;        //G
+        cores[i + 2] = rand() % 255 / 255.0;        //B
+    }
+    //Transferir cores para device
+    glVertexAttribPointer(
+                            1,
+                            2,
+                            GL_FLOAT,
+                            GL_FALSE,
+                            0,
+                            BUFFER_OFFSET(0)
+                            );
+    glEnableVertexAttribArray(1);
+
     for(int i = 0; i < 36; i = i + 3)
         printf("Vertice %i: (%f, %f, %f)\n", i , vertices[i], vertices[i+1], vertices[i+2]);
+    for(int i = 0; i < NumVertices ; i = i + 3)
+        printf("Cor Vertice %i: (%f, %f, %f)\n", i, cores[i], cores[i + 1], cores[i + 2]);
     printf("MVPMatrix: %i\n", MVPID);
+    //printf("CubePosID: %i\n", CubePosID);
     if(glIsBuffer(VBO_cube_position) == GL_TRUE)
         printf("VBO_cube_position é um buffer.\n");
     else
         printf("VBO_cube_position não é um buffer.\n");
+
 
 }
 
 void display(){
     glClearColor(0.0f, 0.0f, 0.2f, 0.0f);     //cor de fundo
     glClear(GL_COLOR_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);            //Ligar depth test para fragmentos correctos serem desenhados (e nao simplesmente o mais recente)
+    glDepthFunc(GL_LESS);               //Criterio de teste: passa o fragmento mais perto da camara
     myprog->startUsing();
 
-    //glm::mat4 ModelMatrix = glm::translate(glm::mat4(), glm::vec3(0, 0, 0));         //Transpor vertices : o cubo esteja centrado em (10, 10, 10)
-    glm::mat4 ModelMatrix = glm::mat4(1.0f);
+    //glm::mat4 ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));         //Transpor vertices : o cubo esteja centrado em (10, 10, 10)
+    //glm::vec4 CubePosition = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);             //Centro do cubo
+    glm::vec3 CubePosition = glm::vec3(0.0f, 0.0f, 0.0f);                       //centro do cubo
+    glm::mat4 ModelMatrix = glm::mat4(1.0f);            //inicializar matriz modelo
+    /*ModelMatrix1 = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, 0.0));
+    ModelMatrix2 = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 2.0, 0.0));
+    ModelMatrix3 = glm::translate(glm::mat4(1.0f), glm::vec3(2.0, 0.0, 0.0));*/
+    ModelMatrix = glm::translate(ModelMatrix, CubePosition);            //translação para centro do cubo
+    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(10.0f, 10.0f, 10.0f));      //Aplicar translação
+    ModelMatrix = glm::rotate(ModelMatrix, (float) timeVariable / 1000, glm::vec3(0.0f, 1.0f, 0.0f));      //Aplicar rotação sobre o eixo Y
+    /*ModelMatrix1 = glm::rotação(ModelMatrix1, (float) timeVariable / 1000, glm::vec3(1.0f, 0.0f, 0.0f));
+    ModelMatrix2 = glm::rotação(ModelMatrix2, (float) timeVariable / 1000, glm::vec3(0.0f, 1.0f, 0.0f));
+    ModelMatrix3 = glm::rotação(ModelMatrix3, (float) timeVariable / 1000, glm::vec3(0.0f, 0.0f, 1.0f));*/
     glm::mat4 ViewMatrix       = glm::lookAt(
                                 glm::vec3(4, 3, -3), // Camera na posição (4, 3, -3) (coordenadas mundo)
-                                glm::vec3(0, 0, 0), // observa o cubo
+                                //glm::vec3(0, 0, 0), // observa o cubo (na origem)
+                                glm::vec3(10, 10, 10),  //observa o cubo (em 10,10,10)
                                 glm::vec3(0, 1, 0)  // camara de pé
                                 );
     glm::mat4 ProjectionMatrix = glm::perspective(
@@ -119,7 +166,6 @@ void display(){
                         GL_FALSE,           //nao enviar a matriz transposta
                         glm::value_ptr(MVPMatrix)
                         );
-
     glBindVertexArray(VAOId_cube);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     //glDisableVertexAttribArray(0);
@@ -132,7 +178,11 @@ void keyPressed( unsigned char key, int x, int y ) {
 }
 
 void idle(void){
-    //printf("\rVertice 1: (%f, %f, %f).", *vertices[0], *vertices[1], *vertices[2]);
+    deltaTime = newTime - oldTime;
+    timeVariable += deltaTime;
+    oldTime = newTime;
+    newTime = glutGet(GLUT_ELAPSED_TIME);
+    printf("\rTime: %i.", timeVariable);
     glutPostRedisplay();
 }
 
