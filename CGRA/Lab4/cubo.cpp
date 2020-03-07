@@ -199,6 +199,7 @@ void display(){
     glUniform1i(timeID, timeVariable);
     glDrawArrays(GL_TRIANGLES, 0, NumVertices);
     glFlush();
+    myprog2->stopUsing();
     //myprog->stopUsing();
 }
 

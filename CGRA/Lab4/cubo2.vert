@@ -14,8 +14,13 @@ uniform int time;
 
 
 void main(){
-	gl_Position = MVPMatrix * vec4(vertexPosition_modelspace, 1);
+	mat4 SMatrix;			//Declarar matriz de scaling
+	SMatrix[0] = vec4(time % 1000 / 1000.0 * 2, 0, 0, 0);
+	SMatrix[1] = vec4(0, time % 1000 / 1000.0 * 2, 0, 0);
+	SMatrix[2] = vec4(0, 0, time % 1000 / 1000.0 * 2, 0);
+	SMatrix[3] = vec4(0, 0, 0, 1);
+	gl_Position = MVPMatrix * (vec4(vertexPosition_modelspace, 1) * SMatrix);
 	fragColor = vertexColor;
-	//colorChange = vec3((time/100) % 1000 / 1000, (time/50) % 1000 / 1000, (time/25) % 1000 / 1000);
+	colorChange = vec3(sin(time/1000.0), sin(time/500.0), sin(time/250.0));
 }
 

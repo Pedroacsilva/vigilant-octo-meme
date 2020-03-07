@@ -8,6 +8,6 @@ out vec3 color;
 
 void main(){
   //color = fragColor * colorChange;
-  color = fragColor;
+  color = fragColor + colorChange;
 }
 
