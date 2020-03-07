@@ -18,10 +18,10 @@ using namespace std;
 #include <stdlib.h>
 #define BUFFER_OFFSET(i) ((char *)NULL + (i)) 
 
-GLuint VAOId_cube, VBO_cube_position, MVPID, CubePosID;
+GLuint VAOId_cube, VBO_cube_position, MVPID, CubePosID, timeID;
 unsigned int timeVariable, newTime, oldTime, deltaTime;
-
-DEECShader * myprog;
+bool depthTest = false;
+DEECShader * myprog, * myprog2;
 
 const GLuint NumVertices = 6 * 2 * 3;       //Vamos desenhar um cubo como um conjunto de triangulos. Um cubo tem 6 faces, constituidas por 2 triangulos, cada um com 3 vértices
 //COORDENADAS DOS VERTICES DO CUBO
@@ -83,9 +83,13 @@ void init(){
     glGenBuffers(1, &VBO_cube_position);          //Gerar buffer de dados para coordenadas dos vertices do cubo
     glBindBuffer(GL_ARRAY_BUFFER, VBO_cube_position);          //Trabalhar no buffer de coordenadas dos vertices
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);       //Escrever no buffer*/
+    glDepthFunc(GL_LESS);
     myprog->loadShaders("cubo.vert","cubo.frag");     //Indicar os shaders com que trabalhar
     myprog->linkShaderProgram();
+    myprog2->loadShaders("cubo2.vert", "cubo2.frag");
+    myprog2->linkShaderProgram();
     MVPID = glGetUniformLocation(myprog->shaderprogram, "MVPMatrix");
+    timeID = glGetUniformLocation(myprog2->shaderprogram, "time");
     //CubePosID = glGetUniformLocation(myprog->shaderprogram, "CubePos");
     glVertexAttribPointer(
                             0,          //localizacao do atributo. Deve ser concordante com layout do shader
@@ -130,8 +134,8 @@ void init(){
 void display(){
     glClearColor(0.0f, 0.0f, 0.2f, 0.0f);     //cor de fundo
     glClear(GL_COLOR_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);            //Ligar depth test para fragmentos correctos serem desenhados (e nao simplesmente o mais recente)
-    glDepthFunc(GL_LESS);               //Criterio de teste: passa o fragmento mais perto da camara
+    /*glEnable(GL_DEPTH_TEST);            //Ligar depth test para fragmentos correctos serem desenhados (e nao simplesmente o mais recente)
+    glDepthFunc(GL_LESS);               //Criterio de teste: passa o fragmento mais perto da camara*/
     myprog->startUsing();
 
     //glm::mat4 ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));         //Transpor vertices : o cubo esteja centrado em (10, 10, 10)
@@ -166,15 +170,59 @@ void display(){
                         GL_FALSE,           //nao enviar a matriz transposta
                         glm::value_ptr(MVPMatrix)
                         );
-    glBindVertexArray(VAOId_cube);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    //glDisableVertexAttribArray(0);
-    glFlush();
+    glDrawArrays(GL_TRIANGLES, 0, NumVertices);
+    //2º cubo
+    glm::mat4 ModelMatrix2 = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 4.0, 0.0));
+    ModelMatrix2 = glm::translate(ModelMatrix2, glm::vec3(10.0f, 10.0f, 10.0f));      //Aplicar translação
+    ModelMatrix2 = glm::rotate(ModelMatrix2, (float) timeVariable / 1000, glm::vec3(1.0f, 0.0f, 0.0f));      //Aplicar rotação sobre o eixo X
+    MVPMatrix = ProjectionMatrix * ViewMatrix * ModelMatrix2;
+    glUniformMatrix4fv(
+                        MVPID,              //localizacao dos dados nos shaders
+                        1,                  //queremos modificar 1 matriz (e nao um array de matrizes)
+                        GL_FALSE,           //nao enviar a matriz transposta
+                        glm::value_ptr(MVPMatrix)
+                        );
+    glDrawArrays(GL_TRIANGLES, 0, NumVertices);
     myprog->stopUsing();
+    //3º cubo, usa shaders diferentes
+    myprog2->startUsing();
+    glm::mat4 ModelMatrix3 = glm::translate(glm::mat4(1.0f), glm::vec3(4.0, 0.0, 0.0));
+    ModelMatrix3 = glm::translate(ModelMatrix3, glm::vec3(10.0f, 10.0f, 10.0f));      //Aplicar translação
+    ModelMatrix3 = glm::rotate(ModelMatrix3, (float) timeVariable / 1000, glm::vec3(0.0f, 0.0f, 1.0f));      //Aplicar rotação sobre o eixo Z
+    MVPMatrix = ProjectionMatrix * ViewMatrix * ModelMatrix3;
+    glUniformMatrix4fv(
+                        MVPID,              //localizacao dos dados nos shaders
+                        1,                  //queremos modificar 1 matriz (e nao um array de matrizes)
+                        GL_FALSE,           //nao enviar a matriz transposta
+                        glm::value_ptr(MVPMatrix)
+                        );
+    glUniform1i(timeID, timeVariable);
+    glDrawArrays(GL_TRIANGLES, 0, NumVertices);
+    glFlush();
+    //myprog->stopUsing();
 }
 
 
 void keyPressed( unsigned char key, int x, int y ) {
+    switch(key){
+        case 'd':
+            depthTest = !depthTest;
+            if(depthTest){
+                glEnable(GL_DEPTH_TEST);
+                printf("\nDepth test toggled: enabled.\n");
+            }
+            else{
+                glDisable(GL_DEPTH_TEST);
+                printf("\nDepth test toggled: disabled.\n");
+            }
+            break;
+        case 'q':
+            printf("\nGoodbye.\n");
+            myprog->cleanup();
+            myprog2->cleanup();
+            exit(EXIT_SUCCESS);
+            break;
+    }
 }
 
 void idle(void){
@@ -182,7 +230,7 @@ void idle(void){
     timeVariable += deltaTime;
     oldTime = newTime;
     newTime = glutGet(GLUT_ELAPSED_TIME);
-    printf("\rTime: %i.", timeVariable);
+    printf("\rTime: %i ms.", timeVariable);
     glutPostRedisplay();
 }
 
@@ -215,6 +263,7 @@ int main(int argc, char** argv) {
 #endif
 
     myprog = new DEECShader;
+    myprog2 = new DEECShader;
     glutKeyboardFunc( keyPressed );
     glutIdleFunc( idle );       //Definir callback function para no events (idle)
     init();
