@@ -1,3 +1,7 @@
+/*CGRA 2019_2020
+Lab 3: Desenho de triangulos, múltiplos shaders
+Autor: Pedro Silva (2011149228)*/
+
 #include <iostream>
 #include <fstream>
 #include <string>

@@ -1,7 +1,6 @@
-/*COMPUTAÇÃO GRÁFICA E REALIDADE AUMENTADA, 2019/2020
-Autores:
--Gabriel Lopes
--Pedro Silva*/
+/*CGRA 2019_2020
+Lab2: Directivas OpenGL
+Autor: Pedro Silva*/
 
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
