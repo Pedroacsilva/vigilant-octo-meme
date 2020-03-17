@@ -4,6 +4,6 @@
 #Pedro Silva
 all: lab2
 lab2: lab2.cpp
-	g++ -o lab2 lab2.cpp -lGLU -lglut -lGL
+	g++ -o lab2 lab2.cpp -lGLU -lglut -lGL -lGLEW
 clean:
 	rm lab2

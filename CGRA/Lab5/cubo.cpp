@@ -35,36 +35,47 @@ static const GLfloat vertices[] = {
         -1.0f,-1.0f,-1.0f,
         -1.0f,-1.0f, 1.0f,
         -1.0f, 1.0f, 1.0f,
+//------------------------------------------------------------------        
          1.0f, 1.0f,-1.0f,
         -1.0f,-1.0f,-1.0f,
         -1.0f, 1.0f,-1.0f,
+//------------------------------------------------------------------
          1.0f,-1.0f, 1.0f,
         -1.0f,-1.0f,-1.0f,
          1.0f,-1.0f,-1.0f,
+//------------------------------------------------------------------
          1.0f, 1.0f,-1.0f,
          1.0f,-1.0f,-1.0f,
         -1.0f,-1.0f,-1.0f,
+//------------------------------------------------------------------
         -1.0f,-1.0f,-1.0f,
         -1.0f, 1.0f, 1.0f,
         -1.0f, 1.0f,-1.0f,
+//------------------------------------------------------------------
          1.0f,-1.0f, 1.0f,
         -1.0f,-1.0f, 1.0f,
         -1.0f,-1.0f,-1.0f,
+//------------------------------------------------------------------
         -1.0f, 1.0f, 1.0f,
         -1.0f,-1.0f, 1.0f,
          1.0f,-1.0f, 1.0f,
+//------------------------------------------------------------------
          1.0f, 1.0f, 1.0f,
          1.0f,-1.0f,-1.0f,
          1.0f, 1.0f,-1.0f,
+//------------------------------------------------------------------
          1.0f,-1.0f,-1.0f,
          1.0f, 1.0f, 1.0f,
          1.0f,-1.0f, 1.0f,
+//------------------------------------------------------------------
          1.0f, 1.0f, 1.0f,
          1.0f, 1.0f,-1.0f,
         -1.0f, 1.0f,-1.0f,
+//------------------------------------------------------------------
          1.0f, 1.0f, 1.0f,
         -1.0f, 1.0f,-1.0f,
         -1.0f, 1.0f, 1.0f,
+//------------------------------------------------------------------
          1.0f, 1.0f, 1.0f,
         -1.0f, 1.0f, 1.0f,
          1.0f,-1.0f, 1.0f
@@ -262,7 +273,6 @@ void display(){
     glDrawArrays(GL_TRIANGLES, 0, NumVertices);
     glFlush();
     myprog2->stopUsing();
-    //myprog->stopUsing();
 }
 
 
@@ -272,6 +282,7 @@ void keyPressed( unsigned char key, int x, int y ) {
             depthTest = !depthTest;
             if(depthTest){
                 glEnable(GL_DEPTH_TEST);
+                glDepthFunc(GL_LESS);
                 printf("\nDepth test toggled: enabled.\n");
             }
             else{
@@ -324,11 +335,7 @@ int main(int argc, char** argv) {
     cerr << "Unable to initialize GLEW ... exiting" << endl; exit(EXIT_FAILURE);
     }
 #endif
-
-    myprog = new DEECShader;
-    myprog2 = new DEECShader;
-    glutKeyboardFunc( keyPressed );
-    glutIdleFunc( idle );       //Definir callback function para no events (idle)
+    glutSetWindowTitle("Chessboard");
     init();
     glutDisplayFunc(display);
     glutMainLoop();

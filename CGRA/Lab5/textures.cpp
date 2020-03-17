@@ -58,7 +58,6 @@ const GLfloat verticesUV[] ={			//Coordenadas texturas
 	1.0f, 0.0f,
 	1.0f, 1.0f
 };		
-
 const unsigned char myTexture[]={			//RGBA
 	0, 0, 0, 0,
 	255, 255, 255, 0,
@@ -73,7 +72,7 @@ void init(){
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);       //Escrever no buffer
     glGenTextures(1, &textureID);				//Gerar estrutura de dados para textura
     glBindTexture(GL_TEXTURE_2D, textureID);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_BGR, GL_UNSIGNED_BYTE, myTexture);		//Enviar textura para estrutura de dados
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_BGRA, GL_UNSIGNED_BYTE, myTexture);		//Enviar textura para estrutura de dados
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glEnable(GL_DEPTH_TEST);            //Ligar depth test para fragmentos correctos serem desenhados (e nao simplesmente o mais recente)
@@ -103,9 +102,9 @@ void init(){
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));			//Dizer como os dados estao estruturados aos shaders
     glEnableVertexAttribArray(1);
     for(int i = 0; i < NumVertices * 3; i = i + 3)
-        printf("Vertice %i: (%f, %f, %f)\n", i , vertices[i], vertices[i+1], vertices[i+2]);
-    for(int i = 0; i < NumVertices * 2; i = i + 3)
-        printf("Vertice UV %i: (%f, %f)\n", i , vertices[i], vertices[i+1]);
+        printf("Vertice %i: (%f, %f, %f)\n", i/3 , vertices[i], vertices[i+1], vertices[i+2]);
+    for(int i = 0; i < NumVertices * 2; i = i + 2)
+        printf("Vertice UV %i: (%f, %f)\n", i/2 , verticesUV[i], verticesUV[i+1]);
     printf("MVPMatrix: %i\n", MVPID);
     if(glIsBuffer(VBOTrianglesVertex) == GL_TRUE)
         printf("VBOTrianglesVertex é um buffer.\n");
@@ -125,10 +124,10 @@ void display(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);			//Limpar buffer de cores + depth
     myprog->startUsing();
     glm::mat4 ModelMatrix = glm::mat4(1.0f);	//inicializar matriz modelo como identidade
-    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, -10.0f));		//Translação para (0, 0, -10)
+    ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 0.0f, 10.0f));		//Translação para (0, 0, 10)
     glm::mat4 ViewMatrix       = glm::lookAt(
                                 glm::vec3(0, 0, 0), // Camera na origem (coordenadas mundo)
-                                glm::vec3(0, 0, -10),  //observa o ponto (em 0, 0, -10)
+                                glm::vec3(0, 0, 10),  //observa o ponto (em 0, 0, 10)
                                 glm::vec3(0, 1, 0)  // camara de "pé"
                                 );
     glm::mat4 ProjectionMatrix = glm::perspective(
@@ -156,12 +155,15 @@ void keyPressed( unsigned char key, int x, int y ) {
         	printf("\nTexture toggled.\n");
         	BWTexture = !BWTexture;
         	if(!BWTexture){
-        		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img1.width, img1.height, 0, GL_BGR, GL_UNSIGNED_BYTE, img1.data);		//Enviar textura para estrutura de dados
+                glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img1.width, img1.height, 0, GL_RGB, GL_UNSIGNED_BYTE, img1.data);		//Enviar textura para estrutura de dados
+
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glGenerateMipmap(GL_TEXTURE_2D);
 			}
 			else{
-			    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_BGR, GL_UNSIGNED_BYTE, myTexture);		//Enviar textura para estrutura de dados
+			    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_BGRA, GL_UNSIGNED_BYTE, myTexture);		//Enviar textura para estrutura de dados
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			}

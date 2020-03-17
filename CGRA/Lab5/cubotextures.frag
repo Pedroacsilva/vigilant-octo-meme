@@ -3,9 +3,9 @@
 
 //INPUT DATA
 in vec2 UV;
-in vec3 vertexColor;
+in vec3 fragColor;
 //OUTPUT DATA
-out vec3  fragColor;
+out vec3  color;
 //UNIFORM DATA 
 uniform sampler2D textureSampler;
 
@@ -13,7 +13,7 @@ uniform sampler2D textureSampler;
 
 
 void main(){
-  //fragColor = texture(textureSampler, UV) * vertexColor;		//ESTA LINHA DA ERRO (???????????)
-  fragColor = texture(textureSampler, UV).rgb;
+  color = texture(textureSampler, UV).rgb * fragColor.rgb;		//ESTA LINHA DA ERRO
+  //fragColor = texture(textureSampler, UV).rgb;
 }
 
