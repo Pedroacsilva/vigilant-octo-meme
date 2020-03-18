@@ -1,7 +1,7 @@
 #Makefile para Proj 1
 #AUTORES:
 #Pedro Silva
-all: chessboard deecshader
+all: chessboard table deecshader
 
 
 
@@ -14,11 +14,11 @@ chessboard: chessboard.o deecshader.o
 chessboard.o: chessboard.cpp deecshader.h
 	g++ -c -g chessboard.cpp
 
-#table: table.o deecshader.o
-#	g++ -g table.o deecshader.o -L/opt/local/lib  -o table -lglut -lGLEW -lGL -lX11
+table: table.o deecshader.o
+	g++ -g table.o deecshader.o -L/opt/local/lib  -o table -lglut -lGLEW -lGL -lX11
 
-#table.o: table.cpp deecshader.h
-#	g++ -c -g table.cpp
+table.o: table.cpp deecshader.h
+	g++ -c -g table.cpp
 
 clean:
 	rm -f chessboard table deecshader ~.o

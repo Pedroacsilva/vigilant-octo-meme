@@ -3,8 +3,7 @@ Projecto 1: Sala
 Autor: 
 Gabriel Lopes
 Pedro Silva (2011149228)*/
-/*Objectivo: Modelar uma sala, com uma mesa no meio, um tabuleiro de xadrez em cima da mesa,
-uma porta, uma janela  e uma fonte de luz no tecto.*/
+/*Objectivo: Modelar uma mesa*/
 
 using namespace std;
 #include <GL/glew.h>
@@ -34,22 +33,22 @@ DEECShader * tableShader;
 
 const GLfloat MesaVertices[] ={
 	//PERNA: BASE
-	-0.2f, 0.0f, -0.2f,
-	0.2f, 0.0f, -0.2f,
-	0.2f, 0.0f, 0.2f,
-	-0.2f, 0.0f, 0.2f,
+	-0.2f, -0.5f, -0.2f,
+	0.2f, -0.5f, -0.2f,
+	0.2f, -0.5f, 0.2f,
+	-0.2f, -0.5f, 0.2f,
 	//PERNA: TOPO
 	-0.2f, 0.5f, -0.2f,
 	0.2f, 0.5f, -0.2f,
 	0.2f, 0.5f, 0.2f,
 	-0.2f, 0.5f, 0.2f,
 	//TAMPO: BASE
-	-0.8f, 0.5f, 0.8f,
+	-0.8f, 0.5f, -0.8f,
 	0.8f, 0.5f, -0.8f,
 	0.8f, 0.5f, 0.8f,
 	-0.8f, 0.5f, 0.8f,
 	//TAMPO: TOPO
-	-0.8f, 0.6f, 0.8f,
+	-0.8f, 0.6f, -0.8f,
 	0.8f, 0.6f, -0.8f,
 	0.8f, 0.6f, 0.8f,
 	-0.8f, 0.6f, 0.8f,
@@ -60,14 +59,14 @@ const GLfloat MesaVertices[] ={
 
 const GLfloat MesaCores[]={
 	//8 vértices da perna: Saddle Brown, ver https://www.rapidtables.com/web/color/RGB_Color.html
-	0.55f, 0.27f, 0.7f,
-	0.55f, 0.27f, 0.7f,
-	0.55f, 0.27f, 0.7f,
-	0.55f, 0.27f, 0.7f,
-	0.55f, 0.27f, 0.7f,
-	0.55f, 0.27f, 0.7f,
-	0.55f, 0.27f, 0.7f,
-	0.55f, 0.27f, 0.7f,
+	0.55f, 0.27f, 0.07f,
+	0.55f, 0.27f, 0.07f,
+	0.55f, 0.27f, 0.07f,
+	0.55f, 0.27f, 0.07f,
+	0.55f, 0.27f, 0.07f,
+	0.55f, 0.27f, 0.07f,
+	0.55f, 0.27f, 0.07f,
+	0.55f, 0.27f, 0.07f,
 	//8 vértices do tampo: Sienna
 	0.63f, 0.32f, 0.18f,
 	0.63f, 0.32f, 0.18f,
@@ -130,7 +129,7 @@ void init(){
 	glBufferData(GL_ARRAY_BUFFER, sizeof(MesaCores), MesaCores, GL_STATIC_DRAW);
 
 	//Location 1-> cores vértices
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 	glEnableVertexAttribArray(1);
 
 	//Transferir indexação para EBO

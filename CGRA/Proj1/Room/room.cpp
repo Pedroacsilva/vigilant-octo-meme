@@ -69,12 +69,17 @@ const unsigned int RoomIndex[] = {
 	0, 7, 4,
 //PAREDE SUL:
 	0, 1, 5,
-	0, 5, 4
+	0, 5, 4,
+//TECTO:
+	4, 5, 6,
+	4, 6, 7
 };
 
 
 void init(){
 	printf("WORK STUDY: Room.\n");
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 	//Gerar VAO e VBOs
 	glGenVertexArrays(1, &VAORoom);
 	glGenBuffers(1, &VBORoomVertices);
