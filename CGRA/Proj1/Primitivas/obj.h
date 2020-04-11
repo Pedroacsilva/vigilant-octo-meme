@@ -9,19 +9,22 @@
 
 class genericModel{
 protected:
-    unsigned int vao, vboPositions, vboColors, vboTex;
+    GLuint vao;            //VAO
+    GLfloat *  vCoords, *vColors;           //Ponteiros para matrizes de dados
+    GLfloat * vTexCoords;                   //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    GLuint * vEBO;
     int NumVertices;
     
 public:
 
-    genericModel();
-    virtual void drawShape(DEECShader * shaderProg, glm::mat4 ModelMatrix, glm::mat4 ViewMatrix, glm::mat4 ProjectionMatrix){
+    //genericModel();
+    virtual void drawShape(DEECShader * shaderProg){
        shaderProg->startUsing();
 	// bind texture
 
 	// apply model transformations
 
-       glDrawArrays(GL_TRIANGLES, 0,NumVertices);
+       glDrawArrays(GL_TRIANGLES, 0, NumVertices);
        shaderProg->stopUsing();
    }
 };
@@ -29,9 +32,10 @@ public:
 
 class Square: public genericModel{
 public:
-    void drawShape(DEECShader * shaderProg, glm::mat4 ModelMatrix, glm::mat4 ViewMatrix, glm::mat4 ProjectionMatrix);
     //Constructor
     Square();
+    virtual void drawShape(DEECShader * shaderProg);
+    //GLfloat *getvCoords();
 };
 
 /*class Cylinder: public genericModel{

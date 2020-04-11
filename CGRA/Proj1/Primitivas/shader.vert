@@ -9,14 +9,16 @@ layout(location = 2) in vec2 vertexTexCoords;
 uniform mat4 MVPMatrix;
 
 //OUTPUT DATA
-out vec3 fragColors
+out vec3 fragColors;
 out vec2 fragTexCoords;
 
 void main(){
 
-  gl_Position = MVPMatrix * vec4(vertexPosition, 1.0);
-  //gl_Position.w = 1.0;
+  //gl_Position = MVPMatrix * vec4(vertexPosition, 1.0);
+  gl_Position.xyz = vertexPosition;
+  gl_Position.w = 1.0;
   fragColors = vertexColors;
+  //fragColors = vec3(1, 0, 0);
   fragTexCoords = vertexTexCoords;
   
 }

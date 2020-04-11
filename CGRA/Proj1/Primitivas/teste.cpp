@@ -9,17 +9,13 @@ using namespace std;
 #include "deecshader.h"
 #include "obj.h"
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
-/*#define GLM_ENABLE_EXPERIMENTAL
-#include<glm/glm.hpp>
-#include<glm/gtx/transform.hpp>
-#include <glm/gtc/type_ptr.hpp>*/
 
 
 Square quadrado;
 DEECShader * shaderProg;
 
 void init(){
-	printf("TESTE PRIMITIVAS: SQUARE");
+	printf("TESTE PRIMITIVAS: QUADRADO.\n");
 	if(shaderProg->loadShaders("shader.vert","shader.frag") == GL_FALSE){
 		printf("ERROR LOADING SHADERS.\n");
 		exit(EXIT_FAILURE);
@@ -33,10 +29,7 @@ void init(){
 void display(){
 	glClearColor(0.0f, 0.0f, 0.2f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glm::mat4 ModelMatrix = glm::mat4(1.0f);		//Matriz Identidade
-	glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(4, 3, -3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-	glm::mat4 ProjectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-	quadrado.drawShape( shaderProg, ModelMatrix, ViewMatrix, ProjectionMatrix);
+	quadrado.drawShape(shaderProg);
 }
 
 
@@ -62,7 +55,7 @@ int main(int argc, char** argv) {
 #endif
 
 	shaderProg = new DEECShader;
-	glutSetWindowTitle("Chessboard");
+	glutSetWindowTitle("OOP OpenGL: Square");
 	init();
 	glutDisplayFunc(display);
 	//glutIdleFunc(idle);
