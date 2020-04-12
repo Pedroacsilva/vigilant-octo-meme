@@ -14,9 +14,9 @@ out vec2 fragTexCoords;
 
 void main(){
 
-  //gl_Position = MVPMatrix * vec4(vertexPosition, 1.0);
-  gl_Position.xyz = vertexPosition;
-  gl_Position.w = 1.0;
+  gl_Position = MVPMatrix * vec4(vertexPosition, 1.0);
+  //gl_Position.xyz = vertexPosition;
+  //gl_Position.w = 1.0;
   fragColors = vertexColors;
   //fragColors = vec3(1, 0, 0);
   fragTexCoords = vertexTexCoords;

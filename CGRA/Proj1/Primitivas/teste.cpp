@@ -29,9 +29,24 @@ void init(){
 void display(){
 	glClearColor(0.0f, 0.0f, 0.2f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-	quadrado.drawShape(shaderProg);
+	
+	glm::mat4 ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 10.0f));		//Translação para (0, 0, 10)
+
+	glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 10), glm::vec3(0, 1, 0));
+	glm::mat4 PerspectiveMatrix = glm::perspective(glm::radians(45.0f), 4.0f/3.0f, 0.1f, 100.0f);
+	glm::mat4 MVPMatrix = PerspectiveMatrix * ViewMatrix * ModelMatrix;
+	quadrado.drawShape(shaderProg, MVPMatrix, "img1.ppm");
 }
 
+void keyPressed( unsigned char key, int x, int y ) {
+    switch(key){
+        case 'q':
+            printf("\nGoodbye.\n");
+            shaderProg->cleanup();
+            exit(EXIT_SUCCESS);
+            break;
+    }
+}
 
 
 int main(int argc, char** argv) {
@@ -59,6 +74,6 @@ int main(int argc, char** argv) {
 	init();
 	glutDisplayFunc(display);
 	//glutIdleFunc(idle);
-	//glutKeyboardFunc(keyPressed);
+	glutKeyboardFunc(keyPressed);
 	glutMainLoop();
 }
