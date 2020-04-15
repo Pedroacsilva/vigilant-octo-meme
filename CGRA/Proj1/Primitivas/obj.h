@@ -13,7 +13,7 @@ protected:
     GLfloat *  vCoords, *vColors;           //Ponteiros para matrizes de dados
     GLfloat * vTexCoords;                   //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     GLuint * vEBO;
-
+    CGRAimage textureImage;           //Ponteiro para imagem de textura
     int NumVertices;
     
 public:
@@ -28,6 +28,14 @@ public:
        glDrawArrays(GL_TRIANGLES, 0, NumVertices);
        shaderProg->stopUsing();
    }
+   void setImageTexture(char * textureName){
+        textureImage.loadPPM(textureName);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureImage.width, textureImage.height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureImage.data);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
 };
 
 
@@ -37,17 +45,18 @@ public:
     Square();
     //Destructor
     ~Square();
-    virtual void drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix, char * textureName);
-    //GLfloat *getvCoords();
+    virtual void drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix);
 };
 
-/*class Cylinder: public genericModel{
+class Cube: public genericModel{
 
 public:
-    Cylinder(float radius, float height);
-    //drawShape(GLuint ShaderProg); // uncomment if needed
+    //Constructor & Destructor
+    Cube();
+    ~Cube();
+    virtual void drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix);
+    virtual void setImageTexture(char * textureName);
 };
-*/
 #endif
 
 

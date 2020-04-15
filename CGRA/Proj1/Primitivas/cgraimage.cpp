@@ -56,9 +56,9 @@ bool CGRAimage::loadPPM(const char * fname){
   pnm_readpaminit(file, &inpam,  sizeof(struct pam));
 #endif
    
-  printf("Reading image %s ...\n",fname );
+  /*printf("Reading image %s ...\n",fname );
   printf("width=%d,height=%d,depth=%d\n",
-	 inpam.width,inpam.height,inpam.depth);
+	 inpam.width,inpam.height,inpam.depth);*/
    
   /* allocating image*/
   

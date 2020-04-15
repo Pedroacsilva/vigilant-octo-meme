@@ -11,7 +11,9 @@ using namespace std;
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 
-Square quadrado;
+int shape2draw = 0;
+bool initFlag = false;
+unsigned int timeVariable, newTime, oldTime, deltaTime;
 DEECShader * shaderProg;
 
 void init(){
@@ -23,19 +25,27 @@ void init(){
 	if(shaderProg->linkShaderProgram() == GL_FALSE){
 		printf("ERROR LINKING SHADERS.\n");
 		exit(EXIT_FAILURE);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_GREATER);
+		printf("Depth test enabled\n");
 	}
 }
 
 void display(){
+	static Cube cubo;
+	if(!initFlag){
+		cubo.setImageTexture("img1.ppm");
+		initFlag = !initFlag;
+	}
+	//static Square quadrado;
 	glClearColor(0.0f, 0.0f, 0.2f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glm::mat4 ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 10.0f));		//Translação para (0, 0, 10)
-
-	glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 10), glm::vec3(0, 1, 0));
+	glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(4, 0, 0), glm::vec3(0, 0, 10), glm::vec3(0, 1, 0));
 	glm::mat4 PerspectiveMatrix = glm::perspective(glm::radians(45.0f), 4.0f/3.0f, 0.1f, 100.0f);
+	ModelMatrix = glm::rotate(ModelMatrix, glm::radians((float)timeVariable/100), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 MVPMatrix = PerspectiveMatrix * ViewMatrix * ModelMatrix;
-	quadrado.drawShape(shaderProg, MVPMatrix, "img1.ppm");
+	cubo.drawShape(shaderProg, MVPMatrix);
 }
 
 void keyPressed( unsigned char key, int x, int y ) {
@@ -45,7 +55,22 @@ void keyPressed( unsigned char key, int x, int y ) {
             shaderProg->cleanup();
             exit(EXIT_SUCCESS);
             break;
+        case 't':
+        	shape2draw++;
+        	if(shape2draw > 1)
+        		shape2draw = 0;
+        	printf("Shape2Draw: %i\n", shape2draw);
+        	break;
     }
+}
+
+void idle(void){
+	deltaTime = newTime - oldTime;
+    timeVariable += deltaTime;
+    oldTime = newTime;
+    newTime = glutGet(GLUT_ELAPSED_TIME);
+    printf("\rTime: %i ms.", timeVariable);
+	glutPostRedisplay();
 }
 
 
@@ -73,7 +98,7 @@ int main(int argc, char** argv) {
 	glutSetWindowTitle("OOP OpenGL: Square");
 	init();
 	glutDisplayFunc(display);
-	//glutIdleFunc(idle);
+	glutIdleFunc(idle);
 	glutKeyboardFunc(keyPressed);
 	glutMainLoop();
 }
