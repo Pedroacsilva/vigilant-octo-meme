@@ -13,10 +13,10 @@ Square::Square(){
     vTexCoords = new GLfloat[NumVertices * 2];	//Texturas
     vEBO = new GLuint[2 * 3];             //EBO: Por quantos triangulos o nosso poligono e constituido * 3
     //Inicializar coordenadas dos vértices		(XYZ)
-    vCoords[0] = -1.0f; vCoords[1] = 1.0f ; vCoords[2] = 1.0f;
-    vCoords[3] = -1.0f; vCoords[4] = -1.0f; vCoords[5] = 1.0f;
-    vCoords[6] = 1.0f ; vCoords[7] = -1.0f; vCoords[8] = 1.0 ;
-    vCoords[9] = 1.0f ; vCoords[10] = 1.0f; vCoords[11] = 1.0;
+    vCoords[0] = -1.0f; vCoords[1] = 1.0f ; vCoords[2] = 0.0f;
+    vCoords[3] = -1.0f; vCoords[4] = -1.0f; vCoords[5] = 0.0f;
+    vCoords[6] = 1.0f ; vCoords[7] = -1.0f; vCoords[8] = 0.0 ;
+    vCoords[9] = 1.0f ; vCoords[10] = 1.0f; vCoords[11] = 0.0;
     //Inicializar cores (RGB). Por defeito, o quadrado é branco
     for(int i = 0; i < NumVertices * 3; i++)
     	vColors[i] = 1.0f;
@@ -28,37 +28,17 @@ Square::Square(){
 	//Inicializar EBO
 	vEBO[0] = 0; vEBO[1] = 1; vEBO[2] = 3;
 	vEBO[3] = 1; vEBO[4] = 2; vEBO[5] = 3;
-}
-//Destructor
-Square::~Square(){
-    delete vCoords;
-    delete vColors;
-    delete vTexCoords;
-    delete vEBO;
-    printf("Square destructor called.\n");
-}
-
-//Implementar Square::drawShape()
-void Square::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
-	//Gerar e bind VAO
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-	//Gerar VBOs
-	unsigned int vboCoords, vboColors, vboTexCoords, vboEBO;
-	glGenBuffers(1, &vboCoords);
-	glGenBuffers(1, &vboColors);
-	glGenBuffers(1, &vboTexCoords);
-	glGenBuffers(1, &vboEBO);
-    //Gerar + Bind Texture ID 
+    //Gerar e bind VAO
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    //Gerar VBOs
+    glGenBuffers(1, &vboCoords);
+    glGenBuffers(1, &vboColors);
+    glGenBuffers(1, &vboTexCoords);
+    glGenBuffers(1, &vboEBO);
+    //Gerar 
     glGenTextures(1, &texID);
-    glBindTexture(GL_TEXTURE_2D, texID);  
-	shaderProg->startUsing();
-    //Localizar variável uniforme
-    GLuint MVPID = glGetUniformLocation(shaderProg->shaderprogram, "MVPMatrix");
-    //printf("[Square::drawShape()]MVPID: %i\n", MVPID);
-    //Transferir matriz ModelVieWProjection
-    glUniformMatrix4fv(MVPID, 1, GL_FALSE, glm::value_ptr(MVPMatrix));     
-	//Encher buffers + definir layout dos dados 
+//    glBindTexture(GL_TEXTURE_2D, texID);  
     glBindBuffer(GL_ARRAY_BUFFER, vboCoords);
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * 4, vCoords, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
@@ -79,11 +59,37 @@ void Square::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboEBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 6, vEBO, GL_STATIC_DRAW);
+}
+//Destructor
+Square::~Square(){
+    printf("Square destructor called.\n");
+    delete vCoords;
+    delete vColors;
+    delete vTexCoords;
+    delete vEBO;
+    //Clean up VAOs e VBOs
+    glDeleteBuffers(1, &vboCoords);
+    glDeleteBuffers(1, &vboColors);
+    glDeleteBuffers(1, &vboTexCoords);
+    glDeleteBuffers(1, &vboEBO);
+}
+
+//Implementar Square::drawShape()
+void Square::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
+    glBindVertexArray(vao);
+    glBindTexture(GL_TEXTURE_2D, texID);
+	shaderProg->startUsing();
+    //Localizar variável uniforme
+    GLuint MVPID = glGetUniformLocation(shaderProg->shaderprogram, "MVPMatrix");
+    //printf("[Square::drawShape()]MVPID: %i\n", MVPID);
+    //Transferir matriz ModelVieWProjection
+    glUniformMatrix4fv(MVPID, 1, GL_FALSE, glm::value_ptr(MVPMatrix));     
+	//Encher buffers + definir layout dos dados 
    	//Desenhar triangulos na ordem do EBO
    	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     //glDrawArrays(GL_TRIANGLES, 0, 6);
     shaderProg->stopUsing();
-    glFlush();
+    //glFlush();
 }
 
 
@@ -153,7 +159,7 @@ Cube::Cube(){
     glGenBuffers(1, &vboEBO);
     //Gerar + Bind Texture ID 
     glGenTextures(1, &texID);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
+    glBindTexture(GL_TEXTURE_2D, texID);
         //Encher buffers + definir layout dos dados 
     glBindBuffer(GL_ARRAY_BUFFER, vboCoords);
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * NumVertices, vCoords, GL_STATIC_DRAW);
@@ -179,30 +185,34 @@ Cube::Cube(){
 }
 //Destructor
 Cube::~Cube(){
+    printf("Cube destructor called.\n");
     delete vCoords;
     delete vColors;
     delete vTexCoords;
     delete vEBO;
-    printf("Cube destructor called.\n");
+    //Clean up VAOs e VBOs
+    glDeleteBuffers(1, &vboCoords);
+    glDeleteBuffers(1, &vboColors);
+    glDeleteBuffers(1, &vboTexCoords);
+    glDeleteBuffers(1, &vboEBO);
 }
 
 
 void Cube::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
-    glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
+    glBindVertexArray(vao);
+    glBindTexture(GL_TEXTURE_2D, texID);
     shaderProg->startUsing();
     //Localizar variável uniforme
     GLuint MVPID = glGetUniformLocation(shaderProg->shaderprogram, "MVPMatrix");
-    //printf("[Cube::drawShape()]MVPID: %i\n", MVPID);
-    //Transferir matriz ModelVieWProjection
     glUniformMatrix4fv(MVPID, 1, GL_FALSE, glm::value_ptr(MVPMatrix));     
     //Desenhar triangulos na ordem do EBO
     glDrawElements(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, 0);
-    //glDrawArrays(GL_TRIANGLES, 0, 6);
     shaderProg->stopUsing();
-    glFlush();
+    //glFlush();
 }
 
 void Cube::setImageTexture(char * textureName){
+    //Pelo que vejo um cube map nao e a melhor forma para texturar um cubo (mais para skyboxes?), o blender daria-me as coordenadas UV dum cubo mas lol nao tenho blender porra
     //Vou utilizar um cube map para definir a textura do cubo. 
     glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
     for(int i = 0; i < 6; i++){

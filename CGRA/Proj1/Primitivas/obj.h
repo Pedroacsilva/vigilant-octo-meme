@@ -9,12 +9,13 @@
 
 class genericModel{
 protected:
-    GLuint vao, texID;            //VAO & ID para textura
+    GLuint vao, texID;            //VAO & Texture IDs
     GLfloat *  vCoords, *vColors;           //Ponteiros para matrizes de dados
     GLfloat * vTexCoords;                   //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     GLuint * vEBO;
     CGRAimage textureImage;           //Ponteiro para imagem de textura
     int NumVertices;
+    unsigned int vboCoords, vboColors, vboTexCoords, vboEBO;    //IDs para VBOs
     
 public:
 
@@ -29,6 +30,7 @@ public:
        shaderProg->stopUsing();
    }
    void setImageTexture(char * textureName){
+        glBindTexture(GL_TEXTURE_2D, texID);
         textureImage.loadPPM(textureName);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureImage.width, textureImage.height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureImage.data);
