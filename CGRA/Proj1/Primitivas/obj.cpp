@@ -98,7 +98,8 @@ void Square::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
 ********************************************************/
 
 //Implementar Constructor & Destructor
-Cube::Cube(){
+//NOTA: Para texturar um cubo, usar um EBO nao é ideal. Os vértices dum cubo têm coordenadas textura diferentes!!
+/*Cube::Cube(){
     printf("Cube constructor called.\n");
     NumVertices = 8;
     //Alocar memória
@@ -181,40 +182,122 @@ Cube::Cube(){
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboEBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 3 * 2 * 6, vEBO, GL_STATIC_DRAW);
+}*/
+Cube::Cube(){
+    printf("Cube constructor called. Not using EBO.\n");
+    NumVertices = 2 * 6 * 3;            //36
+    GLfloat vertices[] = {
+        -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0,
+        -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
 
-}
-//Destructor
-Cube::~Cube(){
-    printf("Cube destructor called.\n");
-    delete vCoords;
-    delete vColors;
-    delete vTexCoords;
-    delete vEBO;
-    //Clean up VAOs e VBOs
-    glDeleteBuffers(1, &vboCoords);
-    glDeleteBuffers(1, &vboColors);
-    glDeleteBuffers(1, &vboTexCoords);
-    glDeleteBuffers(1, &vboEBO);
-}
+        1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0,
+        1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0,
 
+        1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, -1.0,
+        1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0,
 
-void Cube::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
+        -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0,
+        -1.0, -1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0,
+
+        -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0,
+        -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0, 1.0, -1.0,
+
+        -1.0, -1.0, 1.0, -1.0, -1.0, -1.0, 1.0, -1.0, -1.0,
+        -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0
+     };
+     GLfloat uvCoord[] = {
+        0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+        0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+        
+        0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+        0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+        
+        0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+        0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+
+        0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+        0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+
+        0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+        0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+
+        0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+        0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f
+    }; 
+     vCoords = vertices;
+     vTexCoords = uvCoord;
+     vColors = new GLfloat[3 * 3 * 2 * 6];
+     /*for(int i = 0; i < 3 * 3 * 2 * 6; i++)
+        vColors[i] = 1.0f;     //Inicializar o cubo como branco*/
+    for(int i = 0; i < NumVertices * 3; i = i + 3){
+        vColors[i] = rand() % 255 / 255.0;            //R
+        vColors[i + 1] = rand() % 255 / 255.0;        //G
+        vColors[i + 2] = rand() % 255 / 255.0;        //B
+    }
+
+    //Gerar e bind VAO
+    glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
+    //Gerar VBOs
+    unsigned int vboCoords, vboColors, vboTexCoords, vboEBO;
+    glGenBuffers(1, &vboCoords);
+    glGenBuffers(1, &vboColors);
+    glGenBuffers(1, &vboTexCoords);
+    glGenBuffers(1, &vboEBO);
+    //Gerar + Bind Texture ID 
+    glGenTextures(1, &texID);
     glBindTexture(GL_TEXTURE_2D, texID);
-    shaderProg->startUsing();
-    //Localizar variável uniforme
-    GLuint MVPID = glGetUniformLocation(shaderProg->shaderprogram, "MVPMatrix");
-    glUniformMatrix4fv(MVPID, 1, GL_FALSE, glm::value_ptr(MVPMatrix));     
-    //Desenhar triangulos na ordem do EBO
-    glDrawElements(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, 0);
-    shaderProg->stopUsing();
-    //glFlush();
+        //Encher buffers + definir layout dos dados 
+    glBindBuffer(GL_ARRAY_BUFFER, vboCoords);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vCoords, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboColors);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * NumVertices, vColors, GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(1);
+
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboTexCoords);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(uvCoord), vTexCoords, GL_STATIC_DRAW);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(2);
 }
 
-void Cube::setImageTexture(char * textureName){
+//Destructor
+    Cube::~Cube(){
+        printf("Cube destructor called.\n");
+        /*delete vCoords;
+        delete vColors;
+        delete vTexCoords;
+        delete vEBO;*/
+    //Clean up VAOs e VBOs
+        glDeleteBuffers(1, &vboCoords);
+        glDeleteBuffers(1, &vboColors);
+        glDeleteBuffers(1, &vboTexCoords);
+        glDeleteBuffers(1, &vboEBO);
+    }
+
+
+    void Cube::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
+        glBindVertexArray(vao);
+        glBindTexture(GL_TEXTURE_2D, texID);
+        shaderProg->startUsing();
+    //Localizar variável uniforme
+        GLuint MVPID = glGetUniformLocation(shaderProg->shaderprogram, "MVPMatrix");
+        glUniformMatrix4fv(MVPID, 1, GL_FALSE, glm::value_ptr(MVPMatrix));     
+    //Desenhar triangulos na ordem do EBO
+//        glDrawElements(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, 0);
+        //Se nao estiver a usar o EBO:
+        glDrawArrays(GL_TRIANGLES, 0, NumVertices);
+        shaderProg->stopUsing();
+    }
+
+/*void Cube::setImageTexture(char * textureName){
     //Pelo que vejo um cube map nao e a melhor forma para texturar um cubo (mais para skyboxes?), o blender daria-me as coordenadas UV dum cubo mas lol nao tenho blender porra
     //Vou utilizar um cube map para definir a textura do cubo. 
-    glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
+    /*glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
     for(int i = 0; i < 6; i++){
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, textureImage.width, textureImage.height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureImage.data);
     }
@@ -222,5 +305,5 @@ void Cube::setImageTexture(char * textureName){
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-}
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);*/
+//}

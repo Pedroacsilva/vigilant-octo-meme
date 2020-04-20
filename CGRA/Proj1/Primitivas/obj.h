@@ -57,7 +57,7 @@ public:
     Cube();
     ~Cube();
     virtual void drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix);
-    virtual void setImageTexture(char * textureName);
+    //virtual void setImageTexture(char * textureName);
 };
 #endif
 

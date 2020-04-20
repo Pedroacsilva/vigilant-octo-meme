@@ -28,29 +28,31 @@ void init(){
 	}
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-	printf("Depth test enabled\n");
+	glEnable(GL_CULL_FACE);
 }
 
 void display(){
 	static Cube cubo, cubo2;
 	static Square quadrado;
 	if(!initFlag){
-		//cubo.setImageTexture("img1.ppm");
+		cubo.setImageTexture("img1.ppm");
+		//Texturar um cubo com EBO é trabalho inglório. Cubemaps supostamente funcionariam mas nao estao a dar
 		quadrado.setImageTexture("img1.ppm");
+		cubo2.setImageTexture("img1.ppm");
 		initFlag = !initFlag;
 	}
 	glClearColor(0.0f, 0.0f, 0.2f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glm::mat4 ModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 10.0f));		//Translação para (0, 0, 10)
 	glm::mat4 ViewMatrix = glm::lookAt(glm::vec3(4, 0, 0), glm::vec3(0, 0, 10), glm::vec3(0, 1, 0));
-	glm::mat4 PerspectiveMatrix = glm::perspective(glm::radians(45.0f), 4.0f/3.0f, 0.1f, 20.0f);
-	//ModelMatrix = glm::rotate(ModelMatrix, glm::radians((float)timeVariable/10), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 PerspectiveMatrix = glm::perspective(glm::radians(45.0f), 4.0f/3.0f, 7.0f, 14.0f);
+	ModelMatrix = glm::rotate(ModelMatrix, glm::radians((float)timeVariable/10), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 MVPMatrix = PerspectiveMatrix * ViewMatrix * ModelMatrix;
 	ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 2.0f, 0.0f));
 	glm::mat4 MVPMatrixQuadrado = PerspectiveMatrix * ViewMatrix * ModelMatrix;
 	glm::mat4 MVPMatrixCubo2 = PerspectiveMatrix * ViewMatrix * glm::translate(ModelMatrix, glm::vec3(2.0f, 0.0f, 0.0f));
 	cubo.drawShape(shaderProg, MVPMatrix);
-	quadrado.drawShape(shaderProg, MVPMatrixQuadrado);
+	//quadrado.drawShape(shaderProg, MVPMatrixQuadrado);
 	cubo2.drawShape(shaderProg, MVPMatrixCubo2);
 	glFlush();
 }
@@ -62,11 +64,29 @@ void keyPressed( unsigned char key, int x, int y ) {
             shaderProg->cleanup();
             exit(EXIT_SUCCESS);
             break;
-        case 't':
-        	shape2draw++;
-        	if(shape2draw > 1)
-        		shape2draw = 0;
-        	printf("Shape2Draw: %i\n", shape2draw);
+        case 'l':
+        	printf("Depth Test: GL_LESS");
+        	glDepthFunc(GL_LESS);
+        	break;
+        case 'g':
+        	printf("Depth Test: GL_GREATER");
+        	glDepthFunc(GL_GREATER);
+        	break;
+        case 'd':
+        	printf("Depth Test disabled.\n");
+        	glDisable(GL_DEPTH_TEST);
+        	break;
+        case 'e':
+        	printf("Depth Test enabled.\n");
+        	glEnable(GL_DEPTH_TEST);
+        	break;
+        case 'n':
+            printf("Depth Test: GL_NEVER.\n");
+        	glDepthFunc(GL_NEVER);
+        	break;
+        case 'a':
+            printf("Depth Test: GL_ALWAYS\n");
+        	glDepthFunc(GL_ALWAYS);
         	break;
     }
 }
