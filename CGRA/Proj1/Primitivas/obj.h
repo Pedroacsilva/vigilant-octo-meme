@@ -59,6 +59,15 @@ public:
     virtual void drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix);
     //virtual void setImageTexture(char * textureName);
 };
+
+
+class Cylinder: public genericModel{
+public:
+    //Constructor & Destructor
+    Cylinder();
+    ~Cylinder();
+    virtual void drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix);
+};
 #endif
 
 

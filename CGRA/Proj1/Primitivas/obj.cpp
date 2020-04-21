@@ -1,4 +1,5 @@
 #include"obj.h"
+#include<math.h>
 
 /********************************************************
 *                           SQUARE                      *
@@ -266,7 +267,7 @@ Cube::Cube(){
 }
 
 //Destructor
-    Cube::~Cube(){
+Cube::~Cube(){
         printf("Cube destructor called.\n");
         /*delete vCoords;
         delete vColors;
@@ -280,7 +281,7 @@ Cube::Cube(){
     }
 
 
-    void Cube::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
+void Cube::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
         glBindVertexArray(vao);
         glBindTexture(GL_TEXTURE_2D, texID);
         shaderProg->startUsing();
@@ -307,3 +308,98 @@ Cube::Cube(){
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);*/
 //}
+
+/********************************************************
+*                           CYLINDER                    *
+********************************************************/
+Cylinder::Cylinder(){
+    printf("Cylinder Default Constructor.\n");
+    /*Um cilindro é essencialmente um prisma com um numero muito elevado de vertices em cada face extrema.
+     Neste constructor, o ciclindro tem faces em y = -1.0 y = 1.0 e raio = 1.0*/
+    int raio = 1.0;
+    float theta_step = 2 * 3.141592 / 10.0;
+    NumVertices = 20;       //10 vertices em cima, 10 em baixo
+    //Alocar memória
+    vCoords = new GLfloat[NumVertices * 3];     //Coordenadas
+    vColors = new GLfloat[NumVertices * 3];     //Cores
+    vTexCoords = new GLfloat[NumVertices * 2];  //Texturas
+    vEBO = new GLuint[NumVertices * 3];             //EBO: Por quantos triangulos o nosso poligono e constituido
+    //Definir coordenadas, cores e coordenadas UV dos vertices
+    for(int i = 0; i < NumVertices / 2; i++){
+        printf("%i\n", i);
+        //X, R                                                     Y, G                                        Z, B
+        vCoords[i * 3] = cos(theta_step * i) * raio;               vCoords[i * 3 + 1] = 1.0;                   vCoords[i * 3 + 2] = sin(theta_step * i) * raio;    //Face y = 1.0
+        vCoords[i * 3 + 30] = cos(theta_step * i) * raio;          vCoords[i * 3 + 31] = -1.0;                 vCoords[i * 3 + 32] = sin(theta_step * i) * raio;   //face y = -1.0
+        vColors[i * 3] = rand() % 255 / 255.0;                     vColors[i * 3 + 1] = rand() % 255 / 255.0;  vColors[i * 3 + 2] = rand() % 255 / 255.0;
+        vColors[i * 3 + 30] = rand() % 255 / 255.0;                vColors[i * 3 + 31] = rand() % 255 / 255.0; vColors[i * 3 + 32] = rand() % 255 / 255.0;
+        //Como mapear uma textura 2D na face lateral dum cilindro? V = y, U em funcao de i
+        vTexCoords[i * 2] = (float) i / 10.0;           vTexCoords[i * 2 + 1] = 1.0;
+        vTexCoords[i * 2 + 20] = (float) i / 10.0;      vTexCoords[i * 2 + 21] = 0.0;
+
+    }
+    //EBO: Ordem dos vértices. Cilindro composto por triangulos. Podemos iterar por um ciclo, mas no case em que i = NumVertices / 2, temos de fazer "à mao"
+    for(int i = 0; i < NumVertices / 2 - 1; i ++){
+        vEBO[i * 3] = i; vEBO[i * 3 + 1] = i + NumVertices / 2; vEBO[i * 3 + 2] = i + NumVertices / 2 + 1;
+        printf("%i\n", i);
+    }
+    vEBO[NumVertices / 2 * 3] = NumVertices / 2; vEBO[NumVertices / 2 * 3 + 1] = NumVertices; vEBO[NumVertices / 2 * 3 + 2] = NumVertices / 2 + 1;
+    vEBO[NumVertices / 2 * 3 + 3] = NumVertices / 2; vEBO[NumVertices / 2 * 3 + 4] = NumVertices / 2 + 1; vEBO[NumVertices / 2 * 3 + 5] = NumVertices;
+
+    //Gerar e bind VAO
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    //Gerar VBOs
+    glGenBuffers(1, &vboCoords);
+    glGenBuffers(1, &vboColors);
+    glGenBuffers(1, &vboTexCoords);
+    glGenBuffers(1, &vboEBO);
+    //Gerar  textura
+    glGenTextures(1, &texID);
+    //Preencher buffers
+    glBindBuffer(GL_ARRAY_BUFFER, vboCoords);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * NumVertices, vCoords, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboColors);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * NumVertices, vColors, GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(1);
+
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboTexCoords);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 2 * NumVertices, vTexCoords, GL_STATIC_DRAW);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(2);
+    
+
+    
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * NumVertices * 3, vEBO, GL_STATIC_DRAW);
+}
+
+//Destructor
+Cylinder::~Cylinder(){
+    printf("Cylinder destructor called.\n");
+    delete vCoords;
+    delete vColors;
+    delete vTexCoords;
+    delete vEBO;
+    //Clean up VAOs e VBOs
+    glDeleteBuffers(1, &vboCoords);
+    glDeleteBuffers(1, &vboColors);
+    glDeleteBuffers(1, &vboTexCoords);
+    glDeleteBuffers(1, &vboEBO);
+}
+
+void Cylinder::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
+    glBindVertexArray(vao);
+    glBindTexture(GL_TEXTURE_2D, texID);
+    shaderProg->startUsing();
+    //Localizar variável uniforme
+    GLuint MVPID = glGetUniformLocation(shaderProg->shaderprogram, "MVPMatrix");
+    glUniformMatrix4fv(MVPID, 1, GL_FALSE, glm::value_ptr(MVPMatrix));     
+    //Desenhar triangulos na ordem do EBO
+    glDrawElements(GL_TRIANGLES, 3 * 2 * 10, GL_UNSIGNED_INT, 0);
+    shaderProg->stopUsing();
+}
