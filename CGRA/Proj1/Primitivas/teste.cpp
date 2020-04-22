@@ -26,8 +26,8 @@ void init(){
 		printf("ERROR LINKING SHADERS.\n");
 		exit(EXIT_FAILURE);
 	}
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
+	//glEnable(GL_DEPTH_TEST);
+	//glDepthFunc(GL_LESS);
 	//glEnable(GL_CULL_FACE);
 }
 
@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
 #ifdef __APPLE__
 	glutInitDisplayMode(GLUT_RGBA|GLUT_3_2_CORE_PROFILE);
 #else // LINUX
-	glutInitDisplayMode(GLUT_RGBA);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH);
 #endif
 	glutInitWindowSize(512, 512);
 
@@ -127,9 +127,9 @@ int main(int argc, char** argv) {
 
 	shaderProg = new DEECShader;
 	glutSetWindowTitle("OOP OpenGL: Square");
-	init();
 	glutDisplayFunc(display);
 	glutIdleFunc(idle);
 	glutKeyboardFunc(keyPressed);
+	init();
 	glutMainLoop();
 }

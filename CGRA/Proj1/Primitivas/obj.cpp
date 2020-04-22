@@ -318,7 +318,7 @@ Cylinder::Cylinder(){
      Neste constructor, o ciclindro tem faces em y = -1.0 y = 1.0 e raio = 1.0*/
     int raio = 1.0;
     float theta_step = 2 * 3.141592 / 10.0;
-    NumVertices = 20;       //10 vertices em cima, 10 em baixo
+    NumVertices = 22;
     //Alocar memória
     vCoords = new GLfloat[NumVertices * 3];     //Coordenadas
     vColors = new GLfloat[NumVertices * 3];     //Cores
@@ -326,24 +326,21 @@ Cylinder::Cylinder(){
     vEBO = new GLuint[NumVertices * 3];             //EBO: Por quantos triangulos o nosso poligono e constituido
     //Definir coordenadas, cores e coordenadas UV dos vertices
     for(int i = 0; i < NumVertices / 2; i++){
-        printf("%i\n", i);
         //X, R                                                     Y, G                                        Z, B
         vCoords[i * 3] = cos(theta_step * i) * raio;               vCoords[i * 3 + 1] = 1.0;                   vCoords[i * 3 + 2] = sin(theta_step * i) * raio;    //Face y = 1.0
-        vCoords[i * 3 + 30] = cos(theta_step * i) * raio;          vCoords[i * 3 + 31] = -1.0;                 vCoords[i * 3 + 32] = sin(theta_step * i) * raio;   //face y = -1.0
+        vCoords[i * 3 + 33] = cos(theta_step * i) * raio;          vCoords[i * 3 + 34] = -1.0;                 vCoords[i * 3 + 35] = sin(theta_step * i) * raio;   //face y = -1.0
         vColors[i * 3] = rand() % 255 / 255.0;                     vColors[i * 3 + 1] = rand() % 255 / 255.0;  vColors[i * 3 + 2] = rand() % 255 / 255.0;
-        vColors[i * 3 + 30] = rand() % 255 / 255.0;                vColors[i * 3 + 31] = rand() % 255 / 255.0; vColors[i * 3 + 32] = rand() % 255 / 255.0;
+        vColors[i * 3 + 33] = rand() % 255 / 255.0;                vColors[i * 3 + 34] = rand() % 255 / 255.0; vColors[i * 3 + 35] = rand() % 255 / 255.0;
         //Como mapear uma textura 2D na face lateral dum cilindro? V = y, U em funcao de i
-        vTexCoords[i * 2] = (float) i / 10.0;           vTexCoords[i * 2 + 1] = 1.0;
-        vTexCoords[i * 2 + 20] = (float) i / 10.0;      vTexCoords[i * 2 + 21] = 0.0;
-
+        vTexCoords[i * 2] = (float) (i) / 10.0;           vTexCoords[i * 2 + 1] = 1.0;
+        vTexCoords[i * 2 + 20] = (float) (i) / 10.0;      vTexCoords[i * 2 + 21] = 0.0;
+        printf("i = %i, x(%i) = %f, z(%i) = %f, u(%i) = %f\n", i, i, vCoords[i * 3], i, vCoords[i * 3 + 2], i, vTexCoords[i * 2]);
     }
     //EBO: Ordem dos vértices. Cilindro composto por triangulos. Podemos iterar por um ciclo, mas no case em que i = NumVertices / 2, temos de fazer "à mao"
-    for(int i = 0; i < NumVertices / 2 - 1; i ++){
-        vEBO[i * 3] = i; vEBO[i * 3 + 1] = i + NumVertices / 2; vEBO[i * 3 + 2] = i + NumVertices / 2 + 1;
-        printf("%i\n", i);
+    for(int i = 0; i < NumVertices / 2; i ++){
+        vEBO[i * 6] = i; vEBO[i * 6 + 1] = i + NumVertices / 2; vEBO[i * 6 + 2] = i + NumVertices / 2 + 1;
+        vEBO[i * 6 + 3] = i; vEBO[i * 6 + 4] = i + NumVertices / 2 + 1; vEBO[i * 6 + 5] = i + 1;
     }
-    vEBO[NumVertices / 2 * 3] = NumVertices / 2; vEBO[NumVertices / 2 * 3 + 1] = NumVertices; vEBO[NumVertices / 2 * 3 + 2] = NumVertices / 2 + 1;
-    vEBO[NumVertices / 2 * 3 + 3] = NumVertices / 2; vEBO[NumVertices / 2 * 3 + 4] = NumVertices / 2 + 1; vEBO[NumVertices / 2 * 3 + 5] = NumVertices;
 
     //Gerar e bind VAO
     glGenVertexArrays(1, &vao);
