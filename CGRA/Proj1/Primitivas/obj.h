@@ -9,11 +9,11 @@
 
 class genericModel{
 protected:
-    GLuint vao, texID;            //VAO & Texture IDs
+    GLuint vao, texID;                      //VAO & Texture IDs
     GLfloat *  vCoords, *vColors;           //Ponteiros para matrizes de dados
     GLfloat * vTexCoords;                   //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     GLuint * vEBO;
-    CGRAimage textureImage;           //Ponteiro para imagem de textura
+    CGRAimage textureImage;                 //Ponteiro para imagem de textura
     int NumVertices;
     unsigned int vboCoords, vboColors, vboTexCoords, vboEBO;    //IDs para VBOs
     
@@ -66,6 +66,14 @@ public:
     //Constructor & Destructor
     Cylinder();
     ~Cylinder();
+    virtual void drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix);
+};
+
+class Sphere: public genericModel{
+public:
+    //Constructor & Destructor
+    Sphere();
+    ~Sphere();
     virtual void drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix);
 };
 #endif

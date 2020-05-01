@@ -26,9 +26,8 @@ void init(){
 		printf("ERROR LINKING SHADERS.\n");
 		exit(EXIT_FAILURE);
 	}
-	//glEnable(GL_DEPTH_TEST);
-	//glDepthFunc(GL_LESS);
-	//glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 }
 
 void display(){

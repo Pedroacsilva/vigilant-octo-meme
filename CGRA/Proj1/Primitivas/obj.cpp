@@ -1,6 +1,6 @@
 #include"obj.h"
 #include<math.h>
-
+#define PI 3.141592
 /********************************************************
 *                           SQUARE                      *
 ********************************************************/
@@ -316,8 +316,8 @@ Cylinder::Cylinder(){
     printf("Cylinder Default Constructor.\n");
     /*Um cilindro é essencialmente um prisma com um numero muito elevado de vertices em cada face extrema.
      Neste constructor, o ciclindro tem faces em y = -1.0 y = 1.0 e raio = 1.0*/
-    int raio = 1.0;
-    float theta_step = 2 * 3.141592 / 10.0;
+    float raio = 1.0;
+    float theta_step = 2 * PI / 10.0;
     NumVertices = 22;
     //Alocar memória
     vCoords = new GLfloat[NumVertices * 3];     //Coordenadas
@@ -327,14 +327,14 @@ Cylinder::Cylinder(){
     //Definir coordenadas, cores e coordenadas UV dos vertices
     for(int i = 0; i < NumVertices / 2; i++){
         //X, R                                                     Y, G                                        Z, B
-        vCoords[i * 3] = cos(theta_step * i) * raio;               vCoords[i * 3 + 1] = 1.0;                   vCoords[i * 3 + 2] = sin(theta_step * i) * raio;    //Face y = 1.0
-        vCoords[i * 3 + 33] = cos(theta_step * i) * raio;          vCoords[i * 3 + 34] = -1.0;                 vCoords[i * 3 + 35] = sin(theta_step * i) * raio;   //face y = -1.0
+        vCoords[i * 3] = cosf(theta_step * i) * raio;               vCoords[i * 3 + 1] = 1.0;                   vCoords[i * 3 + 2] = sinf(theta_step * i) * raio;    //Face y = 1.0
+        vCoords[i * 3 + 33] = cosf(theta_step * i) * raio;          vCoords[i * 3 + 34] = -1.0;                 vCoords[i * 3 + 35] = sinf(theta_step * i) * raio;   //face y = -1.0
         vColors[i * 3] = rand() % 255 / 255.0;                     vColors[i * 3 + 1] = rand() % 255 / 255.0;  vColors[i * 3 + 2] = rand() % 255 / 255.0;
         vColors[i * 3 + 33] = rand() % 255 / 255.0;                vColors[i * 3 + 34] = rand() % 255 / 255.0; vColors[i * 3 + 35] = rand() % 255 / 255.0;
         //Como mapear uma textura 2D na face lateral dum cilindro? V = y, U em funcao de i
         vTexCoords[i * 2] = (float) (i) / 10.0;           vTexCoords[i * 2 + 1] = 1.0;
         vTexCoords[i * 2 + 20] = (float) (i) / 10.0;      vTexCoords[i * 2 + 21] = 0.0;
-        printf("i = %i, x(%i) = %f, z(%i) = %f, u(%i) = %f\n", i, i, vCoords[i * 3], i, vCoords[i * 3 + 2], i, vTexCoords[i * 2]);
+        //printf("i = %i, x(%i) = %f, z(%i) = %f, u(%i) = %f\n", i, i, vCoords[i * 3], i, vCoords[i * 3 + 2], i, vTexCoords[i * 2]);
     }
     //EBO: Ordem dos vértices. Cilindro composto por triangulos. Podemos iterar por um ciclo, mas no case em que i = NumVertices / 2, temos de fazer "à mao"
     for(int i = 0; i < NumVertices / 2; i ++){
@@ -399,4 +399,47 @@ void Cylinder::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
     //Desenhar triangulos na ordem do EBO
     glDrawElements(GL_TRIANGLES, 3 * 2 * 10, GL_UNSIGNED_INT, 0);
     shaderProg->stopUsing();
+}
+
+
+/********************************************************
+*                       SPHERE                          *
+********************************************************/
+//TODO: Pensar como formar um EBO para a esfera
+Sphere::Sphere(){
+    printf("Spehere Constructor called.\n");
+    /*Vamos construir uma esfera fazendo vários gomos de laranja. Cada gomo vai ser constituido, por defeito,
+    por 5 quadrados -> 10 triangulos.*/
+    float raio = 1.0;
+    float phi, theta = 0.0;
+    float phiStep = 2 * PI / 10;
+    float thetaStep = PI / 5;
+    NumVertices = 60;
+    //Alocar memória
+    vCoords = new GLfloat[NumVertices * 3];     //Coordenadas
+    vColors = new GLfloat[NumVertices * 3];     //Cores
+    vTexCoords = new GLfloat[NumVertices * 2];  //Texturas
+    vEBO = new GLuint[NumVertices * 3];             //EBO: Por quantos triangulos o nosso poligono e constituido
+    //Definir coordenadas, cores e coordenadas UV dos vertices
+    /*Vamos usar 10 gomos de laranja, cada um definido por 5 quadrados. Assim teremos de iterar por cada quadrado por cada gomo*/
+    /*Equação paramétrica duma esfera:
+    (X,Y,Z) = (raio * sin(theta) * sin(phi), raio * cos(theta), raio * sin(theta) * cos(phi)) (No sistema de eixos do OpenGL)*/
+    for(int i = 0; i <= 5; i++){                //Iterar por theta
+        float xz = raio * sinf(theta);
+        float y = cosf(theta);
+        for(int j = 0; j < 10; j++){            //Iterar por phi
+            float x = xz * sin(phi);
+            float z = xz * cos(phi);
+            vCoords[i * 30 + j * 3] = x;                     vCoords[i * 30 + j * 3 + 1] = y;                     vCoords[i * 30 + j * 3 + 2] = z;
+            vColors[i * 30 + j * 3] = rand() % 255 / 255.0;  vColors[i * 30 + j * 3 + 1] = rand() % 255 / 255.0;  vColors[i * 30 + j * 3 + 2] = rand() % 255 / 255.0;
+            //Textura duma esfera? (U, V) = (phi / 2pi, theta / pi)
+            phi += phiStep;
+        }
+        theta += thetaStep;
+        phi = 0.0;
+    }
+}
+
+void Sphere::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
+    printf("todo lol.\n");
 }
