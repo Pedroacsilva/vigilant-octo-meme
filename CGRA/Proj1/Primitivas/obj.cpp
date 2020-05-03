@@ -405,7 +405,7 @@ void Cylinder::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
 /********************************************************
 *                       SPHERE                          *
 ********************************************************/
-//TODO: Pensar como formar um EBO para a esfera
+//TODO: Pensar como formar um EBO para a esfera, fazer drawShape.
 Sphere::Sphere(){
     printf("Spehere Constructor called.\n");
     /*Vamos construir uma esfera fazendo vários gomos de laranja. Cada gomo vai ser constituido, por defeito,
@@ -414,32 +414,97 @@ Sphere::Sphere(){
     float phi, theta = 0.0;
     float phiStep = 2 * PI / 10;
     float thetaStep = PI / 5;
-    NumVertices = 60;
+    NumVertices = 66;
     //Alocar memória
     vCoords = new GLfloat[NumVertices * 3];     //Coordenadas
     vColors = new GLfloat[NumVertices * 3];     //Cores
     vTexCoords = new GLfloat[NumVertices * 2];  //Texturas
-    vEBO = new GLuint[NumVertices * 3];             //EBO: Por quantos triangulos o nosso poligono e constituido
+    vEBO = new GLuint[NumVertices * 5];             //EBO: Por quantos triangulos o nosso poligono e constituido
     //Definir coordenadas, cores e coordenadas UV dos vertices
     /*Vamos usar 10 gomos de laranja, cada um definido por 5 quadrados. Assim teremos de iterar por cada quadrado por cada gomo*/
     /*Equação paramétrica duma esfera:
     (X,Y,Z) = (raio * sin(theta) * sin(phi), raio * cos(theta), raio * sin(theta) * cos(phi)) (No sistema de eixos do OpenGL)*/
-    for(int i = 0; i <= 5; i++){                //Iterar por theta
+    for(int i = 0; i < 6; i++){                //Iterar por theta
         float xz = raio * sinf(theta);
         float y = cosf(theta);
-        for(int j = 0; j < 10; j++){            //Iterar por phi
+        for(int j = 0; j < 11; j++){            //Iterar por phi
             float x = xz * sin(phi);
             float z = xz * cos(phi);
             vCoords[i * 30 + j * 3] = x;                     vCoords[i * 30 + j * 3 + 1] = y;                     vCoords[i * 30 + j * 3 + 2] = z;
             vColors[i * 30 + j * 3] = rand() % 255 / 255.0;  vColors[i * 30 + j * 3 + 1] = rand() % 255 / 255.0;  vColors[i * 30 + j * 3 + 2] = rand() % 255 / 255.0;
             //Textura duma esfera? (U, V) = (phi / 2pi, theta / pi)
+            vTexCoords[i * 20 + j * 2] = phi / (2 * PI); vTexCoords[i * 20 + j * 2 + 1] = theta / PI;
             phi += phiStep;
+            printf("(%i, %i), [%3f, %3f]: (%3f, %3f, %3f), (%f, %f)\n", i, j, phi, theta, vCoords[i * 30 + j * 3], vCoords[i * 30 + j * 3 + 1], vCoords[i * 30 + j * 3 + 2], vTexCoords[i * 20 + j * 2], vTexCoords[i * 20 + j * 2 + 1]);
         }
         theta += thetaStep;
         phi = 0.0;
     }
+    //Construir o EBO
+    for(int i = 0; i < 5; i++){
+        for(int j = 0; j < 10; j++){
+        vEBO[(i * 11 + j) * 3] = (i * 11) + j; vEBO[(i * 11 + j) * 3 + 1] = (i + 1) * 11 + j; vEBO[(i * 11 + j) * 3 + 2] = ((i + 1) * 11) + j + 1;
+        //vEBO[(i * 11 + j) * 3 +] = (i * 11) + j; vEBO[(i * 11 + j) * 3 + 1] = (i + 1) * 11 + j; vEBO[(i * 11 + j) * 3 + 2] = ((i + 1) * 11) + j + 1;
+        }
+    }
+    for(int i = 0; i < 90; i++)
+        printf("EBO(%i):%i, %i, %i\n",i, vEBO[i * 3], vEBO[i * 3 + 1], vEBO[i * 3 + 2]);
+
+    //Gerar e bind VAO
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    //Gerar VBOs
+    glGenBuffers(1, &vboCoords);
+    glGenBuffers(1, &vboColors);
+    glGenBuffers(1, &vboTexCoords);
+    glGenBuffers(1, &vboEBO);
+    //Gerar  textura
+    glGenTextures(1, &texID);
+    //Preencher buffers
+    glBindBuffer(GL_ARRAY_BUFFER, vboCoords);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * NumVertices, vCoords, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboColors);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * NumVertices, vColors, GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(1);
+
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboTexCoords);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 2 * NumVertices, vTexCoords, GL_STATIC_DRAW);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(2);
+    
+
+    
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 270, vEBO, GL_STATIC_DRAW);
+}
+
+//Destructor
+Sphere::~Sphere(){
+    printf("Sphere destructor called.\n");
+    delete vCoords;
+    delete vColors;
+    delete vTexCoords;
+    delete vEBO;
+    //Clean up VAOs e VBOs
+    glDeleteBuffers(1, &vboCoords);
+    glDeleteBuffers(1, &vboColors);
+    glDeleteBuffers(1, &vboTexCoords);
+    glDeleteBuffers(1, &vboEBO);
 }
 
 void Sphere::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
-    printf("todo lol.\n");
+    glBindVertexArray(vao);
+    glBindTexture(GL_TEXTURE_2D, texID);
+    shaderProg->startUsing();
+    //Localizar variável uniforme
+    GLuint MVPID = glGetUniformLocation(shaderProg->shaderprogram, "MVPMatrix");
+    glUniformMatrix4fv(MVPID, 1, GL_FALSE, glm::value_ptr(MVPMatrix));     
+    //Desenhar triangulos na ordem do EBO
+    glDrawElements(GL_TRIANGLES, 270, GL_UNSIGNED_INT, 0);
+    shaderProg->stopUsing();
 }

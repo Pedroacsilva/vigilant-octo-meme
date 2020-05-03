@@ -34,12 +34,14 @@ void display(){
 	static Cube cubo, cubo2;
 	static Square quadrado;
 	static Cylinder cilindro;
+	static Sphere esfera;
 	if(!initFlag){
 		cubo.setImageTexture("img1.ppm");
 		//Texturar um cubo com EBO é trabalho inglório. Cubemaps supostamente funcionariam mas nao estao a dar
 		quadrado.setImageTexture("img1.ppm");
 		cubo2.setImageTexture("img1.ppm");
 		cilindro.setImageTexture("img1.ppm");
+		esfera.setImageTexture("img1.ppm");
 		initFlag = !initFlag;
 	}
 	glClearColor(0.0f, 0.0f, 0.2f, 0.0f);
@@ -53,10 +55,12 @@ void display(){
 	glm::mat4 MVPMatrixQuadrado = PerspectiveMatrix * ViewMatrix * ModelMatrix;
 	glm::mat4 MVPMatrixCubo2 = PerspectiveMatrix * ViewMatrix * glm::translate(ModelMatrix, glm::vec3(2.0f, 0.0f, 0.0f));
 	glm::mat4 MVPMatrixCilindro = PerspectiveMatrix * ViewMatrix * glm::translate(ModelMatrix, glm::vec3(-2.0f, 0.0f, 0.0f));
-	/*cubo2.drawShape(shaderProg, MVPMatrixCubo2);
-	cubo.drawShape(shaderProg, MVPMatrix);
-	quadrado.drawShape(shaderProg, MVPMatrixQuadrado);*/
-	cilindro.drawShape(shaderProg, MVPMatrix);
+	glm::mat4 MVPMatrixEsfera = PerspectiveMatrix * ViewMatrix * ModelMatrix;
+	//cubo2.drawShape(shaderProg, MVPMatrixCubo2);
+//	cubo.drawShape(shaderProg, MVPMatrix);
+	//quadrado.drawShape(shaderProg, MVPMatrixQuadrado);
+	//cilindro.drawShape(shaderProg, MVPMatrixCilindro);
+	esfera.drawShape(shaderProg, MVPMatrix);
 	glFlush();
 }
 
