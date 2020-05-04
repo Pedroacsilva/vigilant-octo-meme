@@ -15,6 +15,7 @@ protected:
     GLuint * vEBO;
     CGRAimage textureImage;                 //Ponteiro para imagem de textura
     int NumVertices;
+    glm::mat4 MVPMatrix;
     unsigned int vboCoords, vboColors, vboTexCoords, vboEBO;    //IDs para VBOs
     
 public:
@@ -22,13 +23,21 @@ public:
     //genericModel();
     virtual void drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
        shaderProg->startUsing();
-	// bind texture
-
-	// apply model transformations
-
        glDrawArrays(GL_TRIANGLES, 0, NumVertices);
        shaderProg->stopUsing();
    }
+   //Setters
+   void setVertexColor(GLfloat R, GLfloat G, GLfloat B){
+    for(int i = 0; i < NumVertices; i ++){
+        vColors[i * 3] = R; vColors[i * 3 + 1] = G; vColors[i * 3 + 2] = B;
+    }
+    //Enviar dados para device
+    glBindBuffer(GL_ARRAY_BUFFER, vboColors);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * NumVertices, vColors, GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(1);
+   }
+   //--------------------------------------
    void setImageTexture(char * textureName){
         glBindTexture(GL_TEXTURE_2D, texID);
         textureImage.loadPPM(textureName);
@@ -37,6 +46,10 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    //--------------------------------------
+    void setMVPMatrix(glm::mat4 MVPMatrix){
+        this->MVPMatrix = MVPMatrix;
     }
 };
 
@@ -47,7 +60,7 @@ public:
     Square();
     //Destructor
     ~Square();
-    virtual void drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix);
+    void drawShape(DEECShader * shaderProg);
 };
 
 class Cube: public genericModel{
@@ -56,7 +69,8 @@ public:
     //Constructor & Destructor
     Cube();
     ~Cube();
-    virtual void drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix);
+    //virtual void drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix);
+    void drawShape(DEECShader * shaderProg);
     //virtual void setImageTexture(char * textureName);
 };
 
@@ -66,7 +80,9 @@ public:
     //Constructor & Destructor
     Cylinder();
     ~Cylinder();
-    virtual void drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix);
+    Cylinder(float upperRadius, float lowerRadius, float height);
+    //virtual void drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix);
+    void drawShape(DEECShader * shaderProg);
 };
 
 class Sphere: public genericModel{
@@ -74,7 +90,16 @@ public:
     //Constructor & Destructor
     Sphere();
     ~Sphere();
-    virtual void drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix);
+  //  virtual void drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix);
+    void drawShape(DEECShader * shaderProg);
+};
+
+
+const unsigned char chessBoardTexture[]={           //RGBA
+    0, 0, 0, 0,
+    255, 255, 255, 0,
+    255, 255, 255, 0,
+    0, 0, 0, 0
 };
 #endif
 

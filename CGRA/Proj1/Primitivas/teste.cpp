@@ -11,13 +11,12 @@ using namespace std;
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 
-int shape2draw = 0;
 bool initFlag = false;
 unsigned int timeVariable, newTime, oldTime, deltaTime;
 DEECShader * shaderProg;
 
 void init(){
-	printf("TESTE PRIMITIVAS: QUADRADO.\n");
+	printf("TESTE PRIMITIVAS\n");
 	if(shaderProg->loadShaders("shader.vert","shader.frag") == GL_FALSE){
 		printf("ERROR LOADING SHADERS.\n");
 		exit(EXIT_FAILURE);
@@ -35,12 +34,19 @@ void display(){
 	static Square quadrado;
 	static Cylinder cilindro;
 	static Sphere esfera;
+	//static Rook rook;
+	static Cylinder cone(0.0f, 1.0f, 1.0f);
 	if(!initFlag){
 		cubo.setImageTexture("img1.ppm");
-		//Texturar um cubo com EBO é trabalho inglório. Cubemaps supostamente funcionariam mas nao estao a dar
-		quadrado.setImageTexture("img1.ppm");
+		cubo.setVertexColor(1.0f, 0.0f, 0.0f);
+		quadrado.setImageTexture("chessboard.ppm");
+		quadrado.setVertexColor(0.0f, 1.0f, 0.0f);
 		cubo2.setImageTexture("img1.ppm");
+		cubo2.setVertexColor(0.0f, 0.0f, 1.0f);
 		cilindro.setImageTexture("img1.ppm");
+		cilindro.setVertexColor(0.5f, 0.5f, 0.5f);
+		cone.setImageTexture("img1.ppm");
+		cone.setVertexColor(0.2f, 0.2f, 0.2f);
 		esfera.setImageTexture("img1.ppm");
 		initFlag = !initFlag;
 	}
@@ -55,12 +61,19 @@ void display(){
 	glm::mat4 MVPMatrixQuadrado = PerspectiveMatrix * ViewMatrix * ModelMatrix;
 	glm::mat4 MVPMatrixCubo2 = PerspectiveMatrix * ViewMatrix * glm::translate(ModelMatrix, glm::vec3(2.0f, 0.0f, 0.0f));
 	glm::mat4 MVPMatrixCilindro = PerspectiveMatrix * ViewMatrix * glm::translate(ModelMatrix, glm::vec3(-2.0f, 0.0f, 0.0f));
-	glm::mat4 MVPMatrixEsfera = PerspectiveMatrix * ViewMatrix * ModelMatrix;
-	//cubo2.drawShape(shaderProg, MVPMatrixCubo2);
-//	cubo.drawShape(shaderProg, MVPMatrix);
-	//quadrado.drawShape(shaderProg, MVPMatrixQuadrado);
-	//cilindro.drawShape(shaderProg, MVPMatrixCilindro);
-	esfera.drawShape(shaderProg, MVPMatrix);
+	glm::mat4 MVPMatrixCone = PerspectiveMatrix * ViewMatrix * glm::translate(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.0f));
+	glm::mat4 MVPMatrixEsfera = PerspectiveMatrix * ViewMatrix * glm::translate(ModelMatrix, glm::vec3(-2.0f, 2.0f, 0.0f));
+	quadrado.setMVPMatrix(MVPMatrixQuadrado);
+	cubo2.setMVPMatrix(MVPMatrixCubo2);
+	cilindro.setMVPMatrix(MVPMatrixCilindro);
+	cone.setMVPMatrix(MVPMatrixCone);
+	esfera.setMVPMatrix(MVPMatrixEsfera);
+
+	quadrado.drawShape(shaderProg);
+	cubo2.drawShape(shaderProg);
+	cilindro.drawShape(shaderProg);
+	cone.drawShape(shaderProg);
+	esfera.drawShape(shaderProg);
 	glFlush();
 }
 
@@ -103,7 +116,7 @@ void idle(void){
     timeVariable += deltaTime;
     oldTime = newTime;
     newTime = glutGet(GLUT_ELAPSED_TIME);
-    printf("\rTime: %i ms.", timeVariable);
+    //printf("\rTime: %i ms.", timeVariable);
 	glutPostRedisplay();
 }
 

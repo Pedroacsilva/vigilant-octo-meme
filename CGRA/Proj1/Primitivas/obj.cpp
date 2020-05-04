@@ -76,7 +76,7 @@ Square::~Square(){
 }
 
 //Implementar Square::drawShape()
-void Square::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
+void Square::drawShape(DEECShader * shaderProg){
     glBindVertexArray(vao);
     glBindTexture(GL_TEXTURE_2D, texID);
 	shaderProg->startUsing();
@@ -231,9 +231,9 @@ Cube::Cube(){
      /*for(int i = 0; i < 3 * 3 * 2 * 6; i++)
         vColors[i] = 1.0f;     //Inicializar o cubo como branco*/
     for(int i = 0; i < NumVertices * 3; i = i + 3){
-        vColors[i] = rand() % 255 / 255.0;            //R
-        vColors[i + 1] = rand() % 255 / 255.0;        //G
-        vColors[i + 2] = rand() % 255 / 255.0;        //B
+        vColors[i] = 1.0f;            //R
+        vColors[i + 1] = 1.0f;        //G
+        vColors[i + 2] = 1.0f;        //B
     }
 
     //Gerar e bind VAO
@@ -269,10 +269,7 @@ Cube::Cube(){
 //Destructor
 Cube::~Cube(){
         printf("Cube destructor called.\n");
-        /*delete vCoords;
         delete vColors;
-        delete vTexCoords;
-        delete vEBO;*/
     //Clean up VAOs e VBOs
         glDeleteBuffers(1, &vboCoords);
         glDeleteBuffers(1, &vboColors);
@@ -281,7 +278,7 @@ Cube::~Cube(){
     }
 
 
-void Cube::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
+void Cube::drawShape(DEECShader * shaderProg){
         glBindVertexArray(vao);
         glBindTexture(GL_TEXTURE_2D, texID);
         shaderProg->startUsing();
@@ -329,8 +326,70 @@ Cylinder::Cylinder(){
         //X, R                                                     Y, G                                        Z, B
         vCoords[i * 3] = cosf(theta_step * i) * raio;               vCoords[i * 3 + 1] = 1.0;                   vCoords[i * 3 + 2] = sinf(theta_step * i) * raio;    //Face y = 1.0
         vCoords[i * 3 + 33] = cosf(theta_step * i) * raio;          vCoords[i * 3 + 34] = -1.0;                 vCoords[i * 3 + 35] = sinf(theta_step * i) * raio;   //face y = -1.0
-        vColors[i * 3] = rand() % 255 / 255.0;                     vColors[i * 3 + 1] = rand() % 255 / 255.0;  vColors[i * 3 + 2] = rand() % 255 / 255.0;
-        vColors[i * 3 + 33] = rand() % 255 / 255.0;                vColors[i * 3 + 34] = rand() % 255 / 255.0; vColors[i * 3 + 35] = rand() % 255 / 255.0;
+        vColors[i * 3] = 1.0f;                     vColors[i * 3 + 1] = 1.0f;  vColors[i * 3 + 2] = 1.0f;
+        vColors[i * 3 + 33] = 1.0f;                vColors[i * 3 + 34] = 1.0f; vColors[i * 3 + 35] = 1.0f;
+        //Como mapear uma textura 2D na face lateral dum cilindro? V = y, U em funcao de i
+        vTexCoords[i * 2] = (float) (i) / 10.0;           vTexCoords[i * 2 + 1] = 1.0;
+        vTexCoords[i * 2 + 20] = (float) (i) / 10.0;      vTexCoords[i * 2 + 21] = 0.0;
+        //printf("i = %i, x(%i) = %f, z(%i) = %f, u(%i) = %f\n", i, i, vCoords[i * 3], i, vCoords[i * 3 + 2], i, vTexCoords[i * 2]);
+    }
+    //EBO: Ordem dos vértices. Cilindro composto por triangulos. Podemos iterar por um ciclo, mas no case em que i = NumVertices / 2, temos de fazer "à mao"
+    for(int i = 0; i < NumVertices / 2; i ++){
+        vEBO[i * 6] = i; vEBO[i * 6 + 1] = i + NumVertices / 2; vEBO[i * 6 + 2] = i + NumVertices / 2 + 1;
+        vEBO[i * 6 + 3] = i; vEBO[i * 6 + 4] = i + NumVertices / 2 + 1; vEBO[i * 6 + 5] = i + 1;
+    }
+
+    //Gerar e bind VAO
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    //Gerar VBOs
+    glGenBuffers(1, &vboCoords);
+    glGenBuffers(1, &vboColors);
+    glGenBuffers(1, &vboTexCoords);
+    glGenBuffers(1, &vboEBO);
+    //Gerar  textura
+    glGenTextures(1, &texID);
+    //Preencher buffers
+    glBindBuffer(GL_ARRAY_BUFFER, vboCoords);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * NumVertices, vCoords, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboColors);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * NumVertices, vColors, GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(1);
+
+
+    glBindBuffer(GL_ARRAY_BUFFER, vboTexCoords);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 2 * NumVertices, vTexCoords, GL_STATIC_DRAW);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(2);
+    
+
+    
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * NumVertices * 3, vEBO, GL_STATIC_DRAW);
+}
+
+
+Cylinder::Cylinder(float upperRadius, float lowerRadius, float height){
+    printf("Cylinder overloaded constructor\n");
+    //float raio = 1.0;
+    float theta_step = 2 * PI / 10.0;
+    NumVertices = 22;
+    //Alocar memória
+    vCoords = new GLfloat[NumVertices * 3];     //Coordenadas
+    vColors = new GLfloat[NumVertices * 3];     //Cores
+    vTexCoords = new GLfloat[NumVertices * 2];  //Texturas
+    vEBO = new GLuint[NumVertices * 3];             //EBO: Por quantos triangulos o nosso poligono e constituido
+    //Definir coordenadas, cores e coordenadas UV dos vertices
+    for(int i = 0; i < NumVertices / 2; i++){
+        //X, R                                                     Y, G                                        Z, B
+        vCoords[i * 3] = cosf(theta_step * i) * upperRadius;               vCoords[i * 3 + 1] = 1.0;                   vCoords[i * 3 + 2] = sinf(theta_step * i) * upperRadius;    //Face y = 1.0
+        vCoords[i * 3 + 33] = cosf(theta_step * i) * lowerRadius;          vCoords[i * 3 + 34] = -1.0;                 vCoords[i * 3 + 35] = sinf(theta_step * i) * lowerRadius;   //face y = -1.0
+        vColors[i * 3] = 1.0f;                     vColors[i * 3 + 1] = 1.0f;  vColors[i * 3 + 2] = 1.0f;
+        vColors[i * 3 + 33] = 1.0f;                vColors[i * 3 + 34] = 1.0f; vColors[i * 3 + 35] = 1.0f;
         //Como mapear uma textura 2D na face lateral dum cilindro? V = y, U em funcao de i
         vTexCoords[i * 2] = (float) (i) / 10.0;           vTexCoords[i * 2 + 1] = 1.0;
         vTexCoords[i * 2 + 20] = (float) (i) / 10.0;      vTexCoords[i * 2 + 21] = 0.0;
@@ -389,7 +448,7 @@ Cylinder::~Cylinder(){
     glDeleteBuffers(1, &vboEBO);
 }
 
-void Cylinder::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
+void Cylinder::drawShape(DEECShader * shaderProg){
     glBindVertexArray(vao);
     glBindTexture(GL_TEXTURE_2D, texID);
     shaderProg->startUsing();
@@ -412,7 +471,7 @@ Sphere::Sphere(){
     por 5 quadrados -> 10 triangulos.*/
     float raio = 1.0;
     float phi, theta = 0.0;
-    float phiStep = 2 * PI / 10;
+    float phiStep = 2 * PI / 9;
     float thetaStep = PI / 5;
     NumVertices = 66;
     //Alocar memória
@@ -427,28 +486,39 @@ Sphere::Sphere(){
     for(int i = 0; i < 6; i++){                //Iterar por theta
         float xz = raio * sinf(theta);
         float y = cosf(theta);
-        for(int j = 0; j < 11; j++){            //Iterar por phi
+        for(int j = 0; j < 10; j++){            //Iterar por phi
             float x = xz * sin(phi);
             float z = xz * cos(phi);
             vCoords[i * 30 + j * 3] = x;                     vCoords[i * 30 + j * 3 + 1] = y;                     vCoords[i * 30 + j * 3 + 2] = z;
-            vColors[i * 30 + j * 3] = rand() % 255 / 255.0;  vColors[i * 30 + j * 3 + 1] = rand() % 255 / 255.0;  vColors[i * 30 + j * 3 + 2] = rand() % 255 / 255.0;
+            vColors[i * 30 + j * 3] = 1.0f;  vColors[i * 30 + j * 3 + 1] = 1.0f;  vColors[i * 30 + j * 3 + 2] = 1.0f;
             //Textura duma esfera? (U, V) = (phi / 2pi, theta / pi)
             vTexCoords[i * 20 + j * 2] = phi / (2 * PI); vTexCoords[i * 20 + j * 2 + 1] = theta / PI;
             phi += phiStep;
-            printf("(%i, %i), [%3f, %3f]: (%3f, %3f, %3f), (%f, %f)\n", i, j, phi, theta, vCoords[i * 30 + j * 3], vCoords[i * 30 + j * 3 + 1], vCoords[i * 30 + j * 3 + 2], vTexCoords[i * 20 + j * 2], vTexCoords[i * 20 + j * 2 + 1]);
+            //printf("(%i, %i), [%3f, %3f]: (%3f, %3f, %3f), (%f, %f)\n", i, j, phi, theta, vCoords[i * 30 + j * 3], vCoords[i * 30 + j * 3 + 1], vCoords[i * 30 + j * 3 + 2], vTexCoords[i * 20 + j * 2], vTexCoords[i * 20 + j * 2 + 1]);
         }
         theta += thetaStep;
         phi = 0.0;
     }
     //Construir o EBO
     for(int i = 0; i < 5; i++){
+        for(int j = 0; j < 9; j++){
+            vEBO[(i * 10 + j) * 6] = i * 10 + j;
+            vEBO[(i * 10 + j) * 6 + 1] = (i + 1) * 10 + j;
+            vEBO[(i * 10 + j ) * 6 + 2] = (i + 1) * 10 + j + 1;
+            vEBO[(i * 10 + j ) * 6 + 3] = i * 10 + j;
+            vEBO[(i * 10 + j ) * 6 + 4] = (i + 1) * 10 + j + 1;
+            vEBO[(i * 10 + j ) * 6 + 5] = i * 10 + j + 1;
+        //    printf("vEBO(%i): (%i, %i, %i)\n", (i * 10 + j),vEBO[(i * 10 + j ) * 3], vEBO[(i * 10 + j ) * 3 + 1], vEBO[(i * 10 + j ) * 3 + 2]);
+        }
+    }
+    /*for(int i = 0; i < 5; i++){
         for(int j = 0; j < 10; j++){
         vEBO[(i * 11 + j) * 3] = (i * 11) + j; vEBO[(i * 11 + j) * 3 + 1] = (i + 1) * 11 + j; vEBO[(i * 11 + j) * 3 + 2] = ((i + 1) * 11) + j + 1;
         //vEBO[(i * 11 + j) * 3 +] = (i * 11) + j; vEBO[(i * 11 + j) * 3 + 1] = (i + 1) * 11 + j; vEBO[(i * 11 + j) * 3 + 2] = ((i + 1) * 11) + j + 1;
         }
-    }
-    for(int i = 0; i < 90; i++)
-        printf("EBO(%i):%i, %i, %i\n",i, vEBO[i * 3], vEBO[i * 3 + 1], vEBO[i * 3 + 2]);
+    }*/
+    /*for(int i = 0; i < 90; i++)
+        printf("EBO(%i):%i, %i, %i\n",i, vEBO[i * 3], vEBO[i * 3 + 1], vEBO[i * 3 + 2]);*/
 
     //Gerar e bind VAO
     glGenVertexArrays(1, &vao);
@@ -497,7 +567,7 @@ Sphere::~Sphere(){
     glDeleteBuffers(1, &vboEBO);
 }
 
-void Sphere::drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix){
+void Sphere::drawShape(DEECShader * shaderProg){
     glBindVertexArray(vao);
     glBindTexture(GL_TEXTURE_2D, texID);
     shaderProg->startUsing();
