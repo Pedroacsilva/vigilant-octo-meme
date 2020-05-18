@@ -30,24 +30,10 @@ void init(){
 }
 
 void display(){
-	static Cube cubo, cubo2;
-	static Square quadrado;
-	static Cylinder cilindro;
-	static Sphere esfera;
-	//static Rook rook;
-	static Cylinder cone(0.0f, 1.0f, 1.0f);
+	static Cylinder cubo;
 	if(!initFlag){
-		cubo.setImageTexture("img1.ppm");
-		cubo.setVertexColor(1.0f, 0.0f, 0.0f);
-		quadrado.setImageTexture("chessboard.ppm");
-		quadrado.setVertexColor(0.0f, 1.0f, 0.0f);
-		cubo2.setImageTexture("img1.ppm");
-		cubo2.setVertexColor(0.0f, 0.0f, 1.0f);
-		cilindro.setImageTexture("img1.ppm");
-		cilindro.setVertexColor(0.5f, 0.5f, 0.5f);
-		cone.setImageTexture("img1.ppm");
-		cone.setVertexColor(0.2f, 0.2f, 0.2f);
-		esfera.setImageTexture("img1.ppm");
+		cubo.setImageTexture("chessboard.ppm");
+		cubo.setVertexColor(1.0f, 0.0f, 1.0f);
 		initFlag = !initFlag;
 	}
 	glClearColor(0.0f, 0.0f, 0.2f, 0.0f);
@@ -57,23 +43,8 @@ void display(){
 	glm::mat4 PerspectiveMatrix = glm::perspective(glm::radians(45.0f), 4.0f/3.0f, 7.0f, 14.0f);
 	ModelMatrix = glm::rotate(ModelMatrix, glm::radians((float)timeVariable/10), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 MVPMatrix = PerspectiveMatrix * ViewMatrix * ModelMatrix;
-	ModelMatrix = glm::translate(ModelMatrix, glm::vec3(0.0f, 2.0f, 0.0f));
-	glm::mat4 MVPMatrixQuadrado = PerspectiveMatrix * ViewMatrix * ModelMatrix;
-	glm::mat4 MVPMatrixCubo2 = PerspectiveMatrix * ViewMatrix * glm::translate(ModelMatrix, glm::vec3(2.0f, 0.0f, 0.0f));
-	glm::mat4 MVPMatrixCilindro = PerspectiveMatrix * ViewMatrix * glm::translate(ModelMatrix, glm::vec3(-2.0f, 0.0f, 0.0f));
-	glm::mat4 MVPMatrixCone = PerspectiveMatrix * ViewMatrix * glm::translate(ModelMatrix, glm::vec3(2.0f, 2.0f, 0.0f));
-	glm::mat4 MVPMatrixEsfera = PerspectiveMatrix * ViewMatrix * glm::translate(ModelMatrix, glm::vec3(-2.0f, 2.0f, 0.0f));
-	quadrado.setMVPMatrix(MVPMatrixQuadrado);
-	cubo2.setMVPMatrix(MVPMatrixCubo2);
-	cilindro.setMVPMatrix(MVPMatrixCilindro);
-	cone.setMVPMatrix(MVPMatrixCone);
-	esfera.setMVPMatrix(MVPMatrixEsfera);
-
-	quadrado.drawShape(shaderProg);
-	cubo2.drawShape(shaderProg);
-	cilindro.drawShape(shaderProg);
-	cone.drawShape(shaderProg);
-	esfera.drawShape(shaderProg);
+	cubo.setMVPMatrix(MVPMatrix);
+	cubo.drawShape(shaderProg);
 	glFlush();
 }
 

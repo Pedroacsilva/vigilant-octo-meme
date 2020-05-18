@@ -27,11 +27,12 @@ public:
        shaderProg->stopUsing();
    }
    //Setters
-   void setVertexColor(GLfloat R, GLfloat G, GLfloat B){
+    virtual void setVertexColor(GLfloat R, GLfloat G, GLfloat B){
     for(int i = 0; i < NumVertices; i ++){
         vColors[i * 3] = R; vColors[i * 3 + 1] = G; vColors[i * 3 + 2] = B;
     }
     //Enviar dados para device
+    glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vboColors);
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * NumVertices, vColors, GL_STATIC_DRAW);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
@@ -71,6 +72,7 @@ public:
     ~Cube();
     //virtual void drawShape(DEECShader * shaderProg, glm::mat4 MVPMatrix);
     void drawShape(DEECShader * shaderProg);
+    void setVertexColor(GLfloat R, GLfloat G, GLfloat B);
     //virtual void setImageTexture(char * textureName);
 };
 

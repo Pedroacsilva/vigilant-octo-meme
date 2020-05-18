@@ -227,15 +227,6 @@ Cube::Cube(){
     }; 
      vCoords = vertices;
      vTexCoords = uvCoord;
-     vColors = new GLfloat[3 * 3 * 2 * 6];
-     /*for(int i = 0; i < 3 * 3 * 2 * 6; i++)
-        vColors[i] = 1.0f;     //Inicializar o cubo como branco*/
-    for(int i = 0; i < NumVertices * 3; i = i + 3){
-        vColors[i] = 1.0f;            //R
-        vColors[i + 1] = 1.0f;        //G
-        vColors[i + 2] = 1.0f;        //B
-    }
-
     //Gerar e bind VAO
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -253,12 +244,6 @@ Cube::Cube(){
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vCoords, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
     glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboColors);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * NumVertices, vColors, GL_STATIC_DRAW);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
-    glEnableVertexAttribArray(1);
-
 
     glBindBuffer(GL_ARRAY_BUFFER, vboTexCoords);
     glBufferData(GL_ARRAY_BUFFER, sizeof(uvCoord), vTexCoords, GL_STATIC_DRAW);
@@ -285,13 +270,24 @@ void Cube::drawShape(DEECShader * shaderProg){
     //Localizar variável uniforme
         GLuint MVPID = glGetUniformLocation(shaderProg->shaderprogram, "MVPMatrix");
         glUniformMatrix4fv(MVPID, 1, GL_FALSE, glm::value_ptr(MVPMatrix));     
-    //Desenhar triangulos na ordem do EBO
-//        glDrawElements(GL_TRIANGLES, 3 * 2 * 6, GL_UNSIGNED_INT, 0);
         //Se nao estiver a usar o EBO:
         glDrawArrays(GL_TRIANGLES, 0, NumVertices);
         shaderProg->stopUsing();
     }
 
+void Cube::setVertexColor(GLfloat R, GLfloat G, GLfloat B){
+    printf("Cube::setVertexColor.\n");
+    vColors = new GLfloat[3 * NumVertices];
+    for(int i = 0; i < NumVertices; i++){
+        vColors[i * 3] = R; vColors[i * 3 + 1] = G; vColors[i * 3 + 2] = B;
+        printf("vColors[%i] = %f, vColors[%i] = %f, vColors[%i] = %f\n", i * 3, vColors[i * 3], i * 3 + 1, vColors[i * 3 + 1], i * 3 + 2, vColors[i * 3 + 2]);
+    }
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vboColors);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * NumVertices, vColors, GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
+    glEnableVertexAttribArray(1);
+}
 /*void Cube::setImageTexture(char * textureName){
     //Pelo que vejo um cube map nao e a melhor forma para texturar um cubo (mais para skyboxes?), o blender daria-me as coordenadas UV dum cubo mas lol nao tenho blender porra
     //Vou utilizar um cube map para definir a textura do cubo. 
@@ -308,7 +304,7 @@ void Cube::drawShape(DEECShader * shaderProg){
 
 /********************************************************
 *                           CYLINDER                    *
-********************************************************/
++********************************************************/
 Cylinder::Cylinder(){
     printf("Cylinder Default Constructor.\n");
     /*Um cilindro é essencialmente um prisma com um numero muito elevado de vertices em cada face extrema.
@@ -323,15 +319,15 @@ Cylinder::Cylinder(){
     vEBO = new GLuint[NumVertices * 3];             //EBO: Por quantos triangulos o nosso poligono e constituido
     //Definir coordenadas, cores e coordenadas UV dos vertices
     for(int i = 0; i < NumVertices / 2; i++){
-        //X, R                                                     Y, G                                        Z, B
+        //X, R                                                     Y, G                                         Z, B
         vCoords[i * 3] = cosf(theta_step * i) * raio;               vCoords[i * 3 + 1] = 1.0;                   vCoords[i * 3 + 2] = sinf(theta_step * i) * raio;    //Face y = 1.0
         vCoords[i * 3 + 33] = cosf(theta_step * i) * raio;          vCoords[i * 3 + 34] = -1.0;                 vCoords[i * 3 + 35] = sinf(theta_step * i) * raio;   //face y = -1.0
-        vColors[i * 3] = 1.0f;                     vColors[i * 3 + 1] = 1.0f;  vColors[i * 3 + 2] = 1.0f;
-        vColors[i * 3 + 33] = 1.0f;                vColors[i * 3 + 34] = 1.0f; vColors[i * 3 + 35] = 1.0f;
+        vColors[i * 3] = 1.0f;                                      vColors[i * 3 + 1] = 1.0f;                  vColors[i * 3 + 2] = 1.0f;
+        vColors[i * 3 + 33] = 1.0f;                                 vColors[i * 3 + 34] = 1.0f;                 vColors[i * 3 + 35] = 1.0f;
         //Como mapear uma textura 2D na face lateral dum cilindro? V = y, U em funcao de i
         vTexCoords[i * 2] = (float) (i) / 10.0;           vTexCoords[i * 2 + 1] = 1.0;
         vTexCoords[i * 2 + 20] = (float) (i) / 10.0;      vTexCoords[i * 2 + 21] = 0.0;
-        //printf("i = %i, x(%i) = %f, z(%i) = %f, u(%i) = %f\n", i, i, vCoords[i * 3], i, vCoords[i * 3 + 2], i, vTexCoords[i * 2]);
+        printf("i = %i, x(%i) = %f, z(%i) = %f, u(%i) = %f\n", i, i, vCoords[i * 3], i, vCoords[i * 3 + 2], i, vTexCoords[i * 2]);
     }
     //EBO: Ordem dos vértices. Cilindro composto por triangulos. Podemos iterar por um ciclo, mas no case em que i = NumVertices / 2, temos de fazer "à mao"
     for(int i = 0; i < NumVertices / 2; i ++){
@@ -391,9 +387,9 @@ Cylinder::Cylinder(float upperRadius, float lowerRadius, float height){
         vColors[i * 3] = 1.0f;                     vColors[i * 3 + 1] = 1.0f;  vColors[i * 3 + 2] = 1.0f;
         vColors[i * 3 + 33] = 1.0f;                vColors[i * 3 + 34] = 1.0f; vColors[i * 3 + 35] = 1.0f;
         //Como mapear uma textura 2D na face lateral dum cilindro? V = y, U em funcao de i
-        vTexCoords[i * 2] = (float) (i) / 10.0;           vTexCoords[i * 2 + 1] = 1.0;
-        vTexCoords[i * 2 + 20] = (float) (i) / 10.0;      vTexCoords[i * 2 + 21] = 0.0;
-        //printf("i = %i, x(%i) = %f, z(%i) = %f, u(%i) = %f\n", i, i, vCoords[i * 3], i, vCoords[i * 3 + 2], i, vTexCoords[i * 2]);
+        vTexCoords[i * 2] = (float) (i) / 11.0;           vTexCoords[i * 2 + 1] = 1.0;
+        vTexCoords[i * 2 + 20] = (float) (i) / 11.0;      vTexCoords[i * 2 + 21] = 0.0;
+        printf("i = %i, x(%i) = %f, z(%i) = %f, u(%i) = %f\n", i, i, vCoords[i * 3], i, vCoords[i * 3 + 2], i, vTexCoords[i * 2]);
     }
     //EBO: Ordem dos vértices. Cilindro composto por triangulos. Podemos iterar por um ciclo, mas no case em que i = NumVertices / 2, temos de fazer "à mao"
     for(int i = 0; i < NumVertices / 2; i ++){
